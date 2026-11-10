@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ACA – Assetto Corsa Accelerator | In-Game AI Race Engineer</title>
-<meta name="description" content="ACA is a native Assetto Corsa app that reads your driving physics and speaks live race engineer coaching into your headset. Join the closed beta waitlist.">
+<title>ACA – Assetto Corsa Accelerator | In-Game Voice Engineer</title>
+<meta name="description" content="ACA is a native Assetto Corsa app that reads your driving physics and speaks live race engineer coaching into your headset. Join the closed beta.">
 <meta property="og:title" content="ACA – Assetto Corsa Accelerator">
 <meta property="og:description" content="Find 3 tenths in Sector 2. Without staring at graphs.">
 <meta property="og:image" content="assets/hero-preview.png">
@@ -15,58 +15,44 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-  tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
+  tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'] } } } };
 </script>
 <style>
   body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
   .logo-blend { mix-blend-mode: screen; } /* drops the logo's black background onto the dark page */
-  .bar { transform-origin: center; }
-  .playing .bar { animation: pulse 0.9s ease-in-out infinite; }
-  @keyframes pulse { 0%,100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
-  .track-grid { background-image: linear-gradient(to right, rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 48px 48px; }
-  @media (prefers-reduced-motion: reduce) { .playing .bar { animation: none; } html { scroll-behavior: auto; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
 </head>
 <body class="bg-zinc-950 text-zinc-300 antialiased selection:bg-red-600 selection:text-white">
 
 <!-- NAV -->
-<header class="fixed top-0 inset-x-0 z-50 border-b border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl">
+<header class="fixed top-0 inset-x-0 z-50 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
   <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5" aria-label="Main">
     <a href="#top" class="flex items-center gap-2.5">
-      <img src="assets/logo.png" alt="ACA Logo" class="h-9 w-auto logo-blend">
+      <img src="assets/logo.png" alt="ACA Logo" width="72" height="36" class="logo-blend h-9 w-[72px] shrink-0 object-contain">
       <span class="text-lg font-extrabold tracking-tight text-white">ACA</span>
-      <span class="rounded border border-red-500/40 bg-red-500/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-red-400">BETA</span>
+      <span class="rounded-sm border border-zinc-700 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-zinc-400">BETA</span>
     </a>
-    <div class="hidden items-center gap-8 text-sm font-medium text-zinc-400 md:flex">
-      <a href="#how-it-works" class="hover:text-white transition-colors">How it Works</a>
-      <a href="#features" class="hover:text-white transition-colors">Features</a>
-      <a href="#architecture" class="hover:text-white transition-colors">Architecture</a>
-    </div>
-    <a href="#waitlist" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950">Join Waitlist</a>
+    <a href="#waitlist" class="rounded-md bg-red-600 px-3.5 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950">Join Beta</a>
   </nav>
 </header>
 
 <main id="top">
 
 <!-- HERO -->
-<section class="relative overflow-hidden pt-32 pb-20 sm:pt-40">
-  <div class="track-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]"></div>
-  <div class="pointer-events-none absolute left-1/2 top-0 h-[480px] w-[900px] -translate-x-1/2 rounded-full bg-red-700/20 blur-[120px]"></div>
-  <div class="relative mx-auto max-w-6xl px-5">
+<section class="pt-32 pb-20 sm:pt-40">
+  <div class="mx-auto max-w-6xl px-5">
     <div class="mx-auto max-w-3xl text-center">
-      <p class="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3.5 py-1.5 text-[11px] font-semibold tracking-widest text-red-400 sm:text-xs">
-        <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span></span>
-        THE IN-GAME AI RACE ENGINEER FOR ASSETTO CORSA
-      </p>
-      <h1 class="mt-6 text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl">Find 3 Tenths in Sector 2. Without Staring at Graphs.</h1>
+      <p class="mb-4 font-mono text-xs font-semibold uppercase tracking-widest text-red-500">In-Game Telemetry &amp; Voice Engineer for Assetto Corsa</p>
+      <h1 class="text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl">Find 3 Tenths in Sector 2. Without Staring at Graphs.</h1>
       <p class="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-zinc-400 sm:text-lg">A lightweight Content Manager app that analyzes your braking points, apex speeds, and line deltas—speaking corrective coaching into your ears the moment you exit the corner.</p>
 
       <form class="waitlist-form mx-auto mt-9 max-w-xl" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
         <div class="flex flex-col gap-3 sm:flex-row">
           <label for="email-hero" class="sr-only">Email address</label>
-          <input id="email-hero" name="email" type="email" required autocomplete="email" placeholder="you@racing.com" class="w-full flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30 aria-[invalid=true]:border-red-500">
+          <input id="email-hero" name="email" type="email" required autocomplete="email" placeholder="you@racing.com" class="w-full flex-1 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30 aria-[invalid=true]:border-red-500">
           <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
-          <button type="submit" class="submit-btn inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-3.5 font-semibold text-white shadow-lg shadow-red-950/50 transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-70">
+          <button type="submit" class="submit-btn inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-6 py-3.5 font-semibold text-white transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-70">
             <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
             <span class="btn-label">Request Beta Access</span>
           </button>
@@ -77,27 +63,19 @@
     </div>
 
     <!-- Hero visual -->
-    <div class="relative mx-auto mt-16 max-w-5xl">
-      <div class="absolute -inset-6 -z-10 rounded-[2rem] bg-red-700/20 blur-3xl"></div>
-      <div class="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl shadow-red-950/40">
-        <div class="flex items-center gap-2 border-b border-zinc-800 bg-zinc-900 px-4 py-2.5">
-          <span class="h-2.5 w-2.5 rounded-full bg-zinc-700"></span><span class="h-2.5 w-2.5 rounded-full bg-zinc-700"></span><span class="h-2.5 w-2.5 rounded-full bg-zinc-700"></span>
-          <span class="ml-3 truncate text-xs text-zinc-500">Assetto Corsa — ACA Engineer · Live</span>
-          <span class="ml-auto flex items-center gap-1.5 text-xs font-medium text-red-400"><span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>REC</span>
-        </div>
-        <div class="relative bg-black">
-          <img src="assets/hero-preview.png" alt="ACA In-Game Telemetry Preview" class="block w-full object-cover" loading="eager">
-          <div class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-3 bg-gradient-to-t from-black/90 to-transparent p-4 sm:p-6">
-            <div class="rounded-lg border border-zinc-800 bg-zinc-950/80 px-3 py-2 backdrop-blur">
-              <p class="text-[10px] font-semibold tracking-wider text-zinc-500">LAST CORNER</p>
-              <p class="text-lg font-bold tabular-nums text-white">T1 <span class="text-red-400">−0.082</span></p>
-            </div>
-            <div class="rounded-lg border border-red-500/30 bg-zinc-950/80 px-3 py-2 backdrop-blur">
-              <p class="text-[10px] font-semibold tracking-wider text-red-400">ENGINEER</p>
-              <p class="text-sm font-medium text-white">Brake 15m later and trail to the apex.</p>
-            </div>
-          </div>
-        </div>
+    <div class="relative mx-auto mt-16 aspect-[16/9] min-h-[320px] w-full max-w-4xl overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-2xl shadow-red-950/40 flex items-center justify-center">
+      <img src="assets/hero-preview.png" alt="ACA In-Game Telemetry Preview" class="h-full w-full object-cover">
+      <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+      <div class="absolute left-3 top-3 flex items-center gap-2 rounded-sm border border-zinc-800 bg-zinc-950/80 px-2.5 py-1 font-mono text-[11px] text-zinc-400 backdrop-blur sm:left-5 sm:top-5">
+        <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>LIVE
+      </div>
+      <div class="absolute bottom-3 left-3 rounded-md border border-zinc-800 bg-zinc-950/85 px-3 py-2 backdrop-blur sm:bottom-5 sm:left-5">
+        <p class="font-mono text-[10px] tracking-wider text-zinc-500">LAST CORNER</p>
+        <p class="font-mono text-base font-bold tabular-nums text-white sm:text-lg">T1 <span class="text-red-400">-0.082</span></p>
+      </div>
+      <div class="absolute bottom-3 right-3 max-w-[55%] rounded-md border border-red-500/40 bg-zinc-950/85 px-3 py-2 backdrop-blur sm:bottom-5 sm:right-5 sm:max-w-xs">
+        <p class="font-mono text-[10px] tracking-wider text-red-400">RADIO</p>
+        <p class="text-xs font-medium text-white sm:text-sm">Brake 15m later and trail to the apex.</p>
       </div>
     </div>
   </div>
@@ -106,25 +84,25 @@
 <!-- PROBLEM VS FIX -->
 <section class="border-y border-zinc-800 bg-zinc-900/40 py-20">
   <div class="mx-auto max-w-6xl px-5">
-    <h2 class="mx-auto max-w-2xl text-center text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Your telemetry was never the problem. Reading it mid-session was.</h2>
+    <h2 class="max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Your telemetry was never the problem. Reading it mid-session was.</h2>
     <div class="mt-12 grid gap-6 md:grid-cols-2">
-      <div class="rounded-2xl border border-zinc-800 bg-zinc-950 p-7">
+      <div class="rounded-lg border border-zinc-800 bg-zinc-950 p-7">
         <h3 class="text-lg font-bold text-zinc-400">The traditional way</h3>
         <ol class="mt-5 space-y-3 text-zinc-400">
-          <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-zinc-600"></span>Laps</li>
-          <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-zinc-600"></span>Alt-Tab</li>
-          <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-zinc-600"></span>Dig through MoTeC traces</li>
-          <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-zinc-600"></span>Forget reference points by lap 5</li>
+          <li class="flex items-center gap-3"><span class="h-px w-4 bg-zinc-600"></span>Laps</li>
+          <li class="flex items-center gap-3"><span class="h-px w-4 bg-zinc-600"></span>Alt-Tab</li>
+          <li class="flex items-center gap-3"><span class="h-px w-4 bg-zinc-600"></span>Dig through MoTeC traces</li>
+          <li class="flex items-center gap-3"><span class="h-px w-4 bg-zinc-600"></span>Forget reference points by lap 5</li>
         </ol>
         <p class="mt-6 border-t border-zinc-800 pt-4 text-sm text-zinc-500">Time lost: the rest of your session.</p>
       </div>
-      <div class="rounded-2xl border border-red-500/40 bg-gradient-to-br from-red-950/40 to-zinc-950 p-7 shadow-xl shadow-red-950/20">
+      <div class="rounded-lg border border-red-500/40 bg-zinc-950 p-7">
         <h3 class="text-lg font-bold text-red-400">The ACA way</h3>
         <ol class="mt-5 space-y-3 text-zinc-200">
-          <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-red-500"></span>Drive</li>
-          <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-red-500"></span>Brake late</li>
-          <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-red-500"></span>Hear your engineer call out: “Brake 15m later and trail to the apex”</li>
-          <li class="flex items-center gap-3"><span class="h-2 w-2 rounded-full bg-red-500"></span>Gain instant time</li>
+          <li class="flex items-center gap-3"><span class="h-px w-4 bg-red-500"></span>Drive</li>
+          <li class="flex items-center gap-3"><span class="h-px w-4 bg-red-500"></span>Brake late</li>
+          <li class="flex items-center gap-3"><span class="h-px w-4 bg-red-500"></span>Hear your engineer call out: “Brake 15m later and trail to the apex”</li>
+          <li class="flex items-center gap-3"><span class="h-px w-4 bg-red-500"></span>Gain instant time</li>
         </ol>
         <p class="mt-6 border-t border-red-500/20 pt-4 text-sm text-red-300">Time gained: next lap.</p>
       </div>
@@ -133,118 +111,88 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section id="how-it-works" class="scroll-mt-16 py-24">
+<section class="py-24">
   <div class="mx-auto max-w-6xl px-5">
-    <div class="max-w-2xl">
-      <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">From install to coaching in three steps</h2>
-      <p class="mt-4 text-zinc-400">No spreadsheets, no setup files, no track-by-track configuration.</p>
-    </div>
-    <div class="mt-12 grid gap-6 md:grid-cols-3">
-      <article class="rounded-2xl border border-zinc-800 bg-zinc-900 p-7">
-        <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-red-600/15 text-lg font-extrabold text-red-400 ring-1 ring-red-500/30">1</div>
-        <h3 class="mt-5 text-xl font-bold text-white">Drag &amp; drop install</h3>
+    <h2 class="max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">From install to coaching in three steps</h2>
+    <p class="mt-4 max-w-2xl text-zinc-400">No spreadsheets, no setup files, no track-by-track configuration.</p>
+    <div class="mt-12 grid gap-px overflow-hidden rounded-lg border border-zinc-800 bg-zinc-800 md:grid-cols-3">
+      <article class="bg-zinc-950 p-7">
+        <p class="font-mono text-sm font-semibold text-red-500">Step 1</p>
+        <h3 class="mt-3 text-xl font-bold text-white">Drag &amp; drop install</h3>
         <p class="mt-2 leading-relaxed text-zinc-400">Installs into Content Manager in seconds. ACA runs as a native in-game Python app, so there is nothing else to launch.</p>
       </article>
-      <article class="rounded-2xl border border-zinc-800 bg-zinc-900 p-7">
-        <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-red-600/15 text-lg font-extrabold text-red-400 ring-1 ring-red-500/30">2</div>
-        <h3 class="mt-5 text-xl font-bold text-white">Native track telemetry</h3>
-        <p class="mt-2 leading-relaxed text-zinc-400">Automatically extracts track boundaries and reference geometry from the native <code class="rounded bg-zinc-800 px-1.5 py-0.5 text-sm text-zinc-200">fast_lane</code> data.</p>
+      <article class="bg-zinc-950 p-7">
+        <p class="font-mono text-sm font-semibold text-red-500">Step 2</p>
+        <h3 class="mt-3 text-xl font-bold text-white">Native track telemetry</h3>
+        <p class="mt-2 leading-relaxed text-zinc-400">Automatically extracts track boundaries and reference geometry from the native <code class="rounded-sm bg-zinc-800 px-1.5 py-0.5 font-mono text-sm text-zinc-200">fast_lane</code> data.</p>
       </article>
-      <article class="rounded-2xl border border-zinc-800 bg-zinc-900 p-7">
-        <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-red-600/15 text-lg font-extrabold text-red-400 ring-1 ring-red-500/30">3</div>
-        <h3 class="mt-5 text-xl font-bold text-white">Sub-second radio coaching</h3>
+      <article class="bg-zinc-950 p-7">
+        <p class="font-mono text-sm font-semibold text-red-500">Step 3</p>
+        <h3 class="mt-3 text-xl font-bold text-white">Sub-second radio coaching</h3>
         <p class="mt-2 leading-relaxed text-zinc-400">Cloud-powered AI delivers short, focused race-engineer calls straight to your headset.</p>
       </article>
     </div>
   </div>
 </section>
 
-<!-- AUDIO PREVIEW / ARCHITECTURE -->
-<section id="architecture" class="scroll-mt-16 border-y border-zinc-800 bg-zinc-900/40 py-24">
+<!-- INCIDENT LOG -->
+<section class="border-y border-zinc-800 bg-zinc-900/40 py-24">
   <div class="mx-auto grid max-w-6xl items-center gap-12 px-5 lg:grid-cols-2">
     <div>
       <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Hear what the engineer hears</h2>
       <p class="mt-4 leading-relaxed text-zinc-400">ACA reads your physics every frame and compares your inputs against the circuit’s native boundaries. A small in-game app streams data over a UDP bridge to a cloud engine that works out the one thing worth saying—then says it, before the next braking zone.</p>
-      <ul class="mt-6 space-y-3 text-sm text-zinc-300">
-        <li class="flex gap-3"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500"></span>In-game Python app samples speed, pedals, and position.</li>
-        <li class="flex gap-3"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500"></span>UDP bridge hands processing off, so your frame rate stays untouched.</li>
-        <li class="flex gap-3"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500"></span>Cloud engine returns a short spoken call to your headset.</li>
-      </ul>
     </div>
 
-    <div id="audio-card" class="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl shadow-red-950/30">
-      <div class="flex items-center justify-between border-b border-zinc-800 px-5 py-3">
-        <div>
-          <p class="text-sm font-bold text-white">Spa-Francorchamps · Turn 1 (La Source)</p>
-          <p class="text-xs text-zinc-500">Lap 4 · Sample call</p>
+    <div class="overflow-hidden rounded-md border border-zinc-800 bg-zinc-950 font-mono text-sm">
+      <div class="border-b border-zinc-800 bg-zinc-900 px-4 py-2.5 text-xs font-semibold tracking-wider text-zinc-400">INCIDENT LOG // SPA T1 (LA SOURCE)</div>
+      <div class="space-y-4 p-4 sm:p-5">
+        <p class="break-words text-zinc-300">Entry: <span class="text-white">62 km/h</span> <span class="text-zinc-600">|</span> Reference: <span class="text-white">76 km/h</span> <span class="text-zinc-600">|</span> Delta: <span class="text-red-400">-14 km/h</span></p>
+        <div class="border-l-2 border-red-500 pl-4">
+          <p class="leading-relaxed text-zinc-200"><span class="text-red-400">Radio:</span> ‘You overslowed the entry by 14 km/h. Release the brake earlier and carry momentum to the curb.’</p>
         </div>
-        <span class="rounded bg-red-600/15 px-2 py-1 text-xs font-bold text-red-400 ring-1 ring-red-500/30">−0.140 s</span>
+        <p class="text-xs text-zinc-600">Source: Bono, race engineer</p>
       </div>
-      <div class="grid grid-cols-3 divide-x divide-zinc-800 border-b border-zinc-800 text-center">
-        <div class="p-4"><p class="text-xs text-zinc-500">Entry speed</p><p class="mt-1 text-xl font-bold tabular-nums text-white">62 <span class="text-xs font-medium text-zinc-500">km/h</span></p></div>
-        <div class="p-4"><p class="text-xs text-zinc-500">Reference</p><p class="mt-1 text-xl font-bold tabular-nums text-white">76 <span class="text-xs font-medium text-zinc-500">km/h</span></p></div>
-        <div class="p-4"><p class="text-xs text-zinc-500">Delta</p><p class="mt-1 text-xl font-bold tabular-nums text-red-400">−14 <span class="text-xs font-medium text-zinc-500">km/h</span></p></div>
-      </div>
-      <div class="flex items-center gap-4 px-5 py-5">
-        <button id="play-btn" type="button" aria-label="Play sample radio call" aria-pressed="false" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-600 text-white transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400">
-          <svg id="icon-play" class="h-5 w-5 translate-x-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          <svg id="icon-pause" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-        </button>
-        <div id="wave" class="flex h-14 flex-1 items-center gap-[3px]" aria-hidden="true"></div>
-      </div>
-      <blockquote class="mx-5 mb-5 rounded-xl border-l-2 border-red-500 bg-zinc-900 p-4">
-        <p class="text-xs font-semibold tracking-wide text-red-400">Bono / Race Engineer</p>
-        <p class="mt-1.5 italic leading-relaxed text-zinc-200">“You overslowed the entry by 14 km/h. Release the brake earlier and carry momentum to the curb.”</p>
-      </blockquote>
     </div>
   </div>
 </section>
 
 <!-- FEATURES -->
-<section id="features" class="scroll-mt-16 py-24">
+<section class="py-24">
   <div class="mx-auto max-w-6xl px-5">
-    <div class="max-w-2xl">
-      <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Built to stay out of your way</h2>
-      <p class="mt-4 text-zinc-400">Everything runs in the background while you focus on the next apex.</p>
-    </div>
-    <div class="mt-12 grid gap-6 sm:grid-cols-2">
-      <article class="rounded-2xl border border-zinc-800 bg-zinc-900 p-7 transition-colors hover:border-red-500/40">
-        <svg class="h-7 w-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.5-2.5v-13L9 7m0 13l6-3m-6 3V7m6 10l5.5 2.5v-13L15 4m0 13V4M9 7l6-3"/></svg>
-        <h3 class="mt-4 text-lg font-bold text-white">Zero setup per track</h3>
-        <p class="mt-2 leading-relaxed text-zinc-400">Runs dynamically across all tracks, stock or modded. Load in and drive.</p>
-      </article>
-      <article class="rounded-2xl border border-zinc-800 bg-zinc-900 p-7 transition-colors hover:border-red-500/40">
-        <svg class="h-7 w-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-        <h3 class="mt-4 text-lg font-bold text-white">Zero in-game stutter</h3>
-        <p class="mt-2 leading-relaxed text-zinc-400">A lightweight UDP bridge offloads processing, so there is no FPS drop.</p>
-      </article>
-      <article class="rounded-2xl border border-zinc-800 bg-zinc-900 p-7 transition-colors hover:border-red-500/40">
-        <svg class="h-7 w-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/></svg>
-        <h3 class="mt-4 text-lg font-bold text-white">Content Manager integrated</h3>
-        <p class="mt-2 leading-relaxed text-zinc-400">Turn it on with one click in Content Manager settings.</p>
-      </article>
-      <article class="rounded-2xl border border-zinc-800 bg-zinc-900 p-7 transition-colors hover:border-red-500/40">
-        <svg class="h-7 w-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-14 0m7 7v3m-4 0h8M12 3a3 3 0 00-3 3v5a3 3 0 006 0V6a3 3 0 00-3-3z"/></svg>
-        <h3 class="mt-4 text-lg font-bold text-white">Natural voice radio</h3>
-        <p class="mt-2 leading-relaxed text-zinc-400">Fast, crisp speech synthesized directly over your game sound.</p>
-      </article>
-    </div>
+    <h2 class="max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Built to stay out of your way</h2>
+    <p class="mt-4 max-w-2xl text-zinc-400">Everything runs in the background while you focus on the next apex.</p>
+    <dl class="mt-12 grid gap-x-12 gap-y-10 sm:grid-cols-2">
+      <div class="border-t border-zinc-800 pt-5">
+        <dt class="text-lg font-bold text-white">Zero setup per track</dt>
+        <dd class="mt-2 leading-relaxed text-zinc-400">Runs dynamically across all tracks, stock or modded. Load in and drive.</dd>
+      </div>
+      <div class="border-t border-zinc-800 pt-5">
+        <dt class="text-lg font-bold text-white">Zero in-game stutter</dt>
+        <dd class="mt-2 leading-relaxed text-zinc-400">A lightweight UDP bridge offloads processing, so there is no FPS drop.</dd>
+      </div>
+      <div class="border-t border-zinc-800 pt-5">
+        <dt class="text-lg font-bold text-white">Content Manager integrated</dt>
+        <dd class="mt-2 leading-relaxed text-zinc-400">Turn it on with one click in Content Manager settings.</dd>
+      </div>
+      <div class="border-t border-zinc-800 pt-5">
+        <dt class="text-lg font-bold text-white">Natural voice radio</dt>
+        <dd class="mt-2 leading-relaxed text-zinc-400">Fast, crisp speech synthesized directly over your game sound.</dd>
+      </div>
+    </dl>
   </div>
 </section>
 
 <!-- BOTTOM CTA -->
-<section id="waitlist" class="scroll-mt-16 relative overflow-hidden border-t border-zinc-800 py-24">
-  <div class="pointer-events-none absolute left-1/2 bottom-0 h-72 w-[800px] -translate-x-1/2 rounded-full bg-red-700/20 blur-[110px]"></div>
-  <div class="relative mx-auto max-w-2xl px-5 text-center">
-    <span class="inline-block rounded border border-red-500/40 bg-red-500/10 px-2 py-1 text-[11px] font-bold tracking-wider text-red-400">CLOSED BETA</span>
-    <h2 class="mt-5 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Get on the grid before the beta fills up</h2>
+<section id="waitlist" class="scroll-mt-16 border-t border-zinc-800 bg-zinc-900/40 py-24">
+  <div class="mx-auto max-w-2xl px-5 text-center">
+    <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Get on the grid before the beta fills up</h2>
     <p class="mt-4 text-zinc-400">Beta spots are limited. Leave your email and we’ll send your invite as soon as a slot opens.</p>
     <form class="waitlist-form mx-auto mt-8 max-w-xl text-left" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
       <div class="flex flex-col gap-3 sm:flex-row">
         <label for="email-cta" class="sr-only">Email address</label>
-        <input id="email-cta" name="email" type="email" required autocomplete="email" placeholder="you@racing.com" class="w-full flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30 aria-[invalid=true]:border-red-500">
+        <input id="email-cta" name="email" type="email" required autocomplete="email" placeholder="you@racing.com" class="w-full flex-1 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30 aria-[invalid=true]:border-red-500">
         <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
-        <button type="submit" class="submit-btn inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-3.5 font-semibold text-white shadow-lg shadow-red-950/50 transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-70">
+        <button type="submit" class="submit-btn inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-6 py-3.5 font-semibold text-white transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-70">
           <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
           <span class="btn-label">Request Beta Access</span>
         </button>
@@ -260,7 +208,7 @@
 <footer class="border-t border-zinc-800 bg-zinc-950 py-10">
   <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-5 md:flex-row">
     <div class="flex items-center gap-3">
-      <img src="assets/logo.png" alt="ACA Logo" class="h-8 w-auto logo-blend">
+      <img src="assets/logo.png" alt="ACA Logo" width="64" height="32" class="logo-blend h-8 w-16 shrink-0 object-contain">
       <p class="text-sm text-zinc-500">Engineered for sim racers by sim racers.</p>
     </div>
     <div class="flex items-center gap-6 text-sm text-zinc-500">
@@ -274,37 +222,6 @@
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Waveform
-  (function () {
-    var wave = document.getElementById('wave');
-    var heights = [20,35,28,50,70,45,85,60,95,55,75,40,88,65,100,50,72,38,80,58,92,46,68,30,78,52,90,42,64,34,82,48,70,26,56,40,24,32,18,26];
-    heights.forEach(function (h, i) {
-      var b = document.createElement('span');
-      b.className = 'bar block w-full max-w-[5px] flex-1 rounded-full bg-red-500/60';
-      b.style.height = h + '%';
-      b.style.animationDelay = (i % 8) * 0.08 + 's';
-      wave.appendChild(b);
-    });
-    var card = document.getElementById('audio-card');
-    var btn = document.getElementById('play-btn');
-    var timer;
-    function setPlaying(on) {
-      card.classList.toggle('playing', on);
-      btn.setAttribute('aria-pressed', on);
-      btn.setAttribute('aria-label', on ? 'Pause sample radio call' : 'Play sample radio call');
-      document.getElementById('icon-play').classList.toggle('hidden', on);
-      document.getElementById('icon-pause').classList.toggle('hidden', !on);
-      wave.querySelectorAll('.bar').forEach(function (b) { b.classList.toggle('bg-red-500', on); b.classList.toggle('bg-red-500/60', !on); });
-    }
-    btn.addEventListener('click', function () {
-      var on = !card.classList.contains('playing');
-      setPlaying(on);
-      clearTimeout(timer);
-      if (on) timer = setTimeout(function () { setPlaying(false); }, 6000);
-    });
-  })();
-
-  // Waitlist forms
   document.querySelectorAll('.waitlist-form').forEach(function (form) {
     var input = form.querySelector('input[type="email"]');
     var btn = form.querySelector('.submit-btn');
