@@ -26,14 +26,12 @@
 <body class="bg-zinc-950 text-zinc-300 antialiased selection:bg-red-600 selection:text-white">
 
 <!-- NAV -->
-<header class="fixed top-0 inset-x-0 z-50 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
-  <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5" aria-label="Main">
-    <a href="#top" class="flex items-center gap-2.5">
-      <img src="assets/logo.png" alt="ACA Logo" width="72" height="36" class="logo-blend h-9 w-[72px] shrink-0 object-contain">
-      <span class="text-lg font-extrabold tracking-tight text-white">ACA</span>
+<header class="fixed top-0 inset-x-0 z-50 border-b border-zinc-800 bg-zinc-950">
+  <nav class="mx-auto flex h-16 max-w-6xl items-center px-5" aria-label="Main">
+    <a href="#top" class="flex items-center gap-3">
+      <img src="assets/logo.png" alt="ACA Logo" width="96" height="44" class="logo-blend h-11 w-24 shrink-0 object-contain">
       <span class="rounded-sm border border-zinc-700 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-zinc-400">BETA</span>
     </a>
-    <a href="#waitlist" class="rounded-md bg-red-600 px-3.5 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950">Join Beta</a>
   </nav>
 </header>
 
@@ -47,7 +45,9 @@
       <h1 class="text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl">Find 3 Tenths in Sector 2. Without Staring at Graphs.</h1>
       <p class="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-zinc-400 sm:text-lg">A lightweight Content Manager app that analyzes your braking points, apex speeds, and line deltas—speaking corrective coaching into your ears the moment you exit the corner.</p>
 
-      <form class="waitlist-form mx-auto mt-9 max-w-xl" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
+      <img src="assets/gt40.png" alt="" aria-hidden="true" width="320" height="128" class="logo-blend mx-auto mt-10 aspect-[5/2] w-64 object-contain opacity-90 sm:w-80">
+
+      <form class="waitlist-form mx-auto mt-4 max-w-xl" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
         <div class="flex flex-col gap-3 sm:flex-row">
           <label for="email-hero" class="sr-only">Email address</label>
           <input id="email-hero" name="email" type="email" required autocomplete="email" placeholder="you@racing.com" class="w-full flex-1 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30 aria-[invalid=true]:border-red-500">
@@ -198,7 +198,7 @@
         </button>
       </div>
       <p class="form-msg mt-3 min-h-[1.25rem] text-sm" role="status" aria-live="polite"></p>
-      <p class="form-hint text-center text-xs text-zinc-500">No credit card required. Free during closed beta.</p>
+      
     </form>
   </div>
 </section>
