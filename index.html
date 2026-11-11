@@ -49,7 +49,7 @@
       <h1 class="text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl">Fix the mistake on the next lap, not after the session.</h1>
       <p class="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-zinc-400 sm:text-lg">A lightweight Content Manager app that analyzes your braking markers, minimum corner speeds, and racing line deltas—speaking corrective radio calls into your headset the moment you pick up the throttle.</p>
 
-      <form class="waitlist-form mx-auto mt-4 max-w-xl" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
+      <form class="waitlist-form mx-auto mt-4 max-w-xl" action="https://script.google.com/macros/s/AKfycbzW07gOrve2ZpgEyxgqonPd7FZDR77TH56R9LsvDr5ypqhJYND181dRlG7VCjqG-V6v9A/exec" method="POST" novalidate>
         <div class="flex flex-col gap-3 sm:flex-row">
           <label for="email-hero" class="sr-only">Email address</label>
           <input id="email-hero" name="email" type="email" required autocomplete="email" placeholder="you@racing.com" class="w-full flex-1 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30 aria-[invalid=true]:border-red-500">
@@ -186,7 +186,7 @@
   <div class="mx-auto max-w-2xl px-5 text-center">
     <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Get on the grid before the beta fills up</h2>
     <p class="mt-4 text-zinc-400">Beta spots are limited. Leave your email and we’ll send your invite as soon as a slot opens.</p>
-    <form class="waitlist-form mx-auto mt-8 max-w-xl text-left" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
+    <form class="waitlist-form mx-auto mt-8 max-w-xl text-left" action="https://script.google.com/macros/s/AKfycbzW07gOrve2ZpgEyxgqonPd7FZDR77TH56R9LsvDr5ypqhJYND181dRlG7VCjqG-V6v9A/exec" method="POST" novalidate>
       <div class="flex flex-col gap-3 sm:flex-row">
         <label for="email-cta" class="sr-only">Email address</label>
         <input id="email-cta" name="email" type="email" required autocomplete="email" placeholder="you@racing.com" class="w-full flex-1 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30 aria-[invalid=true]:border-red-500">
@@ -250,18 +250,22 @@
       label.textContent = 'Sending…';
       show('', true);
 
-      fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } })
-        .then(function (res) {
-          if (!res.ok) throw new Error('Request failed');
+      fetch(form.action, {
+        method: 'POST',
+        body: new URLSearchParams(new FormData(form)),
+        mode: 'no-cors'
+      })
+        .then(function () {
           spinner.classList.add('hidden');
           label.textContent = 'You’re on the list';
           btn.classList.replace('bg-red-600', 'bg-emerald-600');
           btn.classList.remove('hover:bg-red-500');
-          show('Request received. We’ll email ' + email + ' when your beta slot opens.', true);
+          show('Request received. Check your inbox for confirmation.', true);
           if (hint) hint.classList.add('hidden');
         })
         .catch(function () {
-          btn.disabled = false; input.disabled = false;
+          btn.disabled = false;
+          input.disabled = false;
           spinner.classList.add('hidden');
           label.textContent = 'Request Beta Access';
           show('Something went wrong sending your request. Check your connection and try again.', false);
