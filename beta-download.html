@@ -34,7 +34,13 @@
       <img src="assets/ACA-logo.png" alt="ACA" width="96" height="44" class="logo-blend h-11 w-24 shrink-0 object-contain">
       <span class="rounded-sm border border-zinc-700 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-zinc-400">BETA</span>
     </a>
-    <img src="assets/GT40.png" alt="Ford GT40" class="logo-blend h-10 w-auto object-contain opacity-80">
+    <div class="flex items-center gap-5">
+      <img src="assets/GT40.png" alt="Ford GT40" class="logo-blend hidden h-10 w-auto object-contain opacity-80 sm:block">
+      <a id="auth-link" href="login.html" class="flex items-center gap-2 text-sm font-semibold text-red-500 transition-colors hover:text-red-400">
+        <span id="auth-link-text">Log in</span>
+        <img src="assets/user.png" alt="" width="28" height="28" class="h-7 w-7 shrink-0 object-contain">
+      </a>
+    </div>
   </nav>
 </header>
 
@@ -192,6 +198,8 @@
   <p class="mx-auto mt-6 max-w-6xl px-5 text-center text-xs text-zinc-600 md:text-left">ACA is an independent project and is not affiliated with or endorsed by Kunos Simulazioni or 505 Games. Assetto Corsa is a trademark of its respective owners.</p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="aca-auth.js"></script>
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
