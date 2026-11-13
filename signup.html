@@ -31,22 +31,7 @@
 </head>
 <body class="bg-zinc-950 text-zinc-300 antialiased selection:bg-red-600 selection:text-white">
 
-<!-- NAV -->
-<header class="fixed top-0 inset-x-0 z-50 border-b border-zinc-800 bg-zinc-950">
-  <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5" aria-label="Main">
-    <a href="index.html" class="flex items-center gap-3">
-      <img src="assets/ACA-logo.png" alt="ACA" width="96" height="44" class="logo-blend h-11 w-24 shrink-0 object-contain">
-      <span class="rounded-sm border border-zinc-700 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-zinc-400">BETA</span>
-    </a>
-    <div class="flex items-center gap-5">
-      <img src="assets/GT40.png" alt="Ford GT40" class="logo-blend hidden h-10 w-auto object-contain opacity-80 sm:block">
-      <a id="auth-link" href="login.html" class="flex items-center gap-2 text-sm font-semibold text-red-500 transition-colors hover:text-red-400">
-        <span id="auth-link-text">Log in</span>
-        <img src="assets/user.png" alt="" width="28" height="28" class="h-7 w-7 shrink-0 object-contain">
-      </a>
-    </div>
-  </nav>
-</header>
+<script src="aca-layout.js" data-slot="header"></script>
 
 <main class="px-5 pt-32 pb-20 sm:pt-40">
   <div class="mx-auto max-w-md">
@@ -78,21 +63,17 @@
         Sign up with Google
       </button>
 
-      <p class="mt-8 text-center text-sm text-zinc-400">Already have an account? <a href="login.html" class="font-semibold text-red-500 transition-colors hover:text-red-400">Log in</a></p>
+      <p class="mt-8 text-center text-sm text-zinc-400">Already have an account? <a href="/login" class="font-semibold text-red-500 transition-colors hover:text-red-400">Log in</a></p>
     </div>
 
     <p id="msg" class="mt-4 min-h-[1.25rem] text-sm" role="status" aria-live="polite"></p>
   </div>
 </main>
 
-<footer class="border-t border-zinc-800 bg-zinc-950 py-8">
-  <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-sm text-zinc-500 sm:flex-row">
-    <p>Engineered for sim racers by sim racers.</p>
-    <p><a href="index.html" class="transition-colors hover:text-white">Back to home</a> &nbsp;·&nbsp; &copy; <span id="year">2026</span> ACA</p>
-  </div>
-</footer>
+<script src="aca-layout.js" data-slot="footer"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="aca-config.js"></script>
 <script src="aca-auth.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
@@ -131,12 +112,12 @@
     ACA.sb.auth.signUp({
       email: email.value.trim(),
       password: password.value,
-      options: { emailRedirectTo: ACA.url('dashboard.html') }
+      options: { emailRedirectTo: ACA.url('/dashboard') }
     })
       .then(function (res) {
         if (res.error) throw res.error;
         // If email confirmation is turned off in Supabase, a session comes back immediately.
-        if (res.data && res.data.session) { window.location.href = 'dashboard.html'; return; }
+        if (res.data && res.data.session) { window.location.href = '/dashboard'; return; }
         btn.querySelector('.spinner').classList.add('hidden');
         btn.querySelector('.btn-label').textContent = 'Check your email';
         form.querySelectorAll('input').forEach(function (i) { i.readOnly = true; });
@@ -153,7 +134,7 @@
   googleBtn.addEventListener('click', function () {
     if (!ACA.configured) { show('Supabase is not configured yet. Add your project URL and anon key in aca-auth.js.', false); return; }
     googleBtn.disabled = true;
-    ACA.sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ACA.url('dashboard.html') } })
+    ACA.sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: ACA.url('/dashboard') } })
       .then(function (res) { if (res.error) throw res.error; })
       .catch(function (err) { googleBtn.disabled = false; show(err.message || 'Google sign-up failed.', false); });
   });
