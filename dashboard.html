@@ -31,22 +31,7 @@
 </head>
 <body class="bg-zinc-950 text-zinc-300 antialiased selection:bg-red-600 selection:text-white">
 
-<!-- NAV -->
-<header class="fixed top-0 inset-x-0 z-50 border-b border-zinc-800 bg-zinc-950">
-  <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5" aria-label="Main">
-    <a href="index.html" class="flex items-center gap-3">
-      <img src="assets/ACA-logo.png" alt="ACA" width="96" height="44" class="logo-blend h-11 w-24 shrink-0 object-contain">
-      <span class="rounded-sm border border-zinc-700 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-zinc-400">BETA</span>
-    </a>
-    <div class="flex items-center gap-5">
-      <img src="assets/GT40.png" alt="Ford GT40" class="logo-blend hidden h-10 w-auto object-contain opacity-80 sm:block">
-      <a id="auth-link" href="login.html" class="flex items-center gap-2 text-sm font-semibold text-red-500 transition-colors hover:text-red-400">
-        <span id="auth-link-text">Log in</span>
-        <img src="assets/user.png" alt="" width="28" height="28" class="h-7 w-7 shrink-0 object-contain">
-      </a>
-    </div>
-  </nav>
-</header>
+<script src="aca-layout.js" data-slot="header"></script>
 
 <main class="px-5 pt-32 pb-20 sm:pt-40">
   <div class="mx-auto max-w-md">
@@ -60,6 +45,26 @@
         <p class="font-mono text-xs uppercase tracking-widest text-zinc-500">Signed in as</p>
         <p id="user-email" class="mt-1 break-all font-medium text-white"></p>
       </div>
+
+      <!-- Profile -->
+      <section class="overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
+        <div class="border-b border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-xs font-semibold tracking-wider text-zinc-400">PROFILE</div>
+        <div class="space-y-6 p-5">
+          <div>
+            <label for="display-name" class="mb-1.5 block text-sm font-medium text-zinc-300">Display name</label>
+            <div class="flex gap-3">
+              <input id="display-name" type="text" maxlength="40" autocomplete="nickname" placeholder="Your name" class="w-full flex-1 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30">
+              <button type="button" id="save-name" class="rounded-md border border-zinc-700 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:opacity-60">Save</button>
+            </div>
+            <p class="mt-2 text-xs text-zinc-500">Shown in the top corner of every page. Leave blank to use your account name.</p>
+          </div>
+          <div>
+            <p class="mb-2 text-sm font-medium text-zinc-300">Driver icon</p>
+            <div id="avatar-grid" class="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Driver icon"></div>
+          </div>
+          <p id="profile-msg" class="min-h-[1.25rem] text-sm" role="status" aria-live="polite"></p>
+        </div>
+      </section>
 
       <!-- Beta tester -->
       <section id="beta-panel" class="hidden overflow-hidden rounded-md border border-red-500/40 bg-zinc-950">
@@ -102,14 +107,10 @@
   </div>
 </main>
 
-<footer class="border-t border-zinc-800 bg-zinc-950 py-8">
-  <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-sm text-zinc-500 sm:flex-row">
-    <p>Engineered for sim racers by sim racers.</p>
-    <p><a href="index.html" class="transition-colors hover:text-white">Back to home</a> &nbsp;·&nbsp; &copy; <span id="year">2026</span> ACA</p>
-  </div>
-</footer>
+<script src="aca-layout.js" data-slot="footer"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="aca-config.js"></script>
 <script src="aca-auth.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
@@ -135,7 +136,91 @@
     }
   }
 
-  function bounceToLogin() { window.location.replace('login.html'); }
+  /* ---------- Profile: display name + driver icon ---------- */
+  var AVATARS = ['car1','car2','car3','car4'];
+  var TILE = 'aspect-[5/3] overflow-hidden rounded-md border bg-zinc-900 p-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400';
+  var sessionUser = null, currentName = null, currentAvatar = 'car1';
+
+  function pshow(text, ok) {
+    var el = $('profile-msg');
+    el.textContent = text;
+    el.className = 'min-h-[1.25rem] text-sm ' + (ok ? 'text-emerald-400' : 'text-red-400');
+  }
+
+  function saveProfile(fields) {
+    return ACA.sb.from('profiles').update(fields).eq('user_id', sessionUser.id).select('display_name, avatar')
+      .then(function (res) {
+        if (res.error) throw res.error;
+        if (!res.data || !res.data.length) throw new Error('Profile not found. Try signing out and back in.');
+        return res.data[0];
+      });
+  }
+
+  function paintAvatars() {
+    $('avatar-grid').querySelectorAll('button').forEach(function (b) {
+      var on = b.dataset.avatar === currentAvatar;
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+      b.className = TILE + (on ? ' border-red-500 ring-2 ring-red-500/30' : ' border-zinc-800 hover:border-zinc-600');
+    });
+  }
+
+  function chooseAvatar(id) {
+    if (id === currentAvatar) return;
+    var prev = currentAvatar;
+    currentAvatar = id;
+    paintAvatars();
+    saveProfile({ avatar: id }).then(function () {
+      ACA.applyProfile(sessionUser, { display_name: currentName, avatar: id });
+      pshow('Icon updated.', true);
+    }).catch(function (err) {
+      currentAvatar = prev; paintAvatars();
+      pshow(err && err.message ? err.message : 'Could not save your icon.', false);
+    });
+  }
+
+  function initProfile(user, profile) {
+    sessionUser = user;
+    currentName = (profile && profile.display_name) || null;
+    currentAvatar = (profile && profile.avatar) || 'car1';
+    $('display-name').value = currentName || '';
+    $('display-name').placeholder = ACA.metaName(user);
+
+    var grid = $('avatar-grid');
+    grid.innerHTML = '';
+    AVATARS.forEach(function (id, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.avatar = id;
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-label', 'Car ' + (i + 1));
+      var img = document.createElement('img');
+      img.src = 'assets/' + id + '.png'; img.alt = ''; img.width = 96; img.height = 58;
+      img.className = 'logo-blend h-full w-full object-contain';
+      b.appendChild(img);
+      b.addEventListener('click', function () { chooseAvatar(id); });
+      grid.appendChild(b);
+    });
+    paintAvatars();
+    ACA.applyProfile(user, profile);
+  }
+
+  function saveName() {
+    var v = $('display-name').value.trim();
+    var btn = $('save-name');
+    btn.disabled = true;
+    pshow('', true);
+    saveProfile({ display_name: v || null }).then(function (row) {
+      currentName = row.display_name || null;
+      ACA.applyProfile(sessionUser, { display_name: currentName, avatar: currentAvatar });
+      pshow(currentName ? 'Name saved.' : 'Name cleared. Using your account name.', true);
+    }).catch(function (err) {
+      pshow(err && err.message ? err.message : 'Could not save your name.', false);
+    }).then(function () { btn.disabled = false; });
+  }
+  $('save-name').addEventListener('click', saveName);
+  $('display-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); saveName(); } });
+
+  function bounceToLogin() { window.location.replace('/login'); }
 
   if (!ACA.configured) {
     $('loading').textContent = '';
@@ -147,12 +232,13 @@
       $('user-email').textContent = session.user.email || '';
 
       return ACA.sb.from('profiles')
-        .select('is_beta_tester, api_key')
+        .select('is_beta_tester, api_key, display_name, avatar')
         .eq('user_id', session.user.id)
         .maybeSingle()
         .then(function (res) {
           if (res.error) throw res.error;
           var profile = res.data; // null if no row yet: treated as waitlist
+          initProfile(session.user, profile);
           $('loading').classList.add('hidden');
           $('dash').classList.remove('hidden');
 
@@ -208,8 +294,8 @@
 
   $('signout-btn').addEventListener('click', function () {
     $('signout-btn').disabled = true;
-    ACA.sb.auth.signOut().then(function () { window.location.href = 'index.html'; },
-                               function () { window.location.href = 'index.html'; });
+    ACA.sb.auth.signOut().then(function () { window.location.href = '/'; },
+                               function () { window.location.href = '/'; });
   });
 </script>
 </body>
