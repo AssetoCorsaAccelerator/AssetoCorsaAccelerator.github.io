@@ -72,7 +72,7 @@
 
     <!-- Quiz form (questions are built from QUESTIONS in the script below) -->
     <form id="v-quiz" class="mt-8 hidden space-y-8" novalidate>
-      <p class="text-zinc-400">A few quick questions about your experience. Finish it and you’ll get a one-time discount code.</p>
+      <p class="text-zinc-400">12 quick questions about you, your setup and how you improve. Finish it and you’ll get a one-time discount code.</p>
       <div id="questions" class="space-y-8"></div>
       <div>
         <button type="submit" id="submit-btn" class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-red-600 px-6 py-3.5 font-semibold text-white transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-70">
@@ -97,22 +97,44 @@
    * QUESTIONS: edit this list. Everything else builds from it.
    *   id       unique key, becomes the column name in your Google Sheet
    *   type     'single' (pick one) | 'multi' (pick several) | 'scale' (number range) | 'text' (free text)
+   *            | 'section' (just a heading: only needs a label)
    *   label    the question shown to the tester
    *   options  choices for single / multi
    *   min,max,lowLabel,highLabel   for scale
-   *   required true/false
+   *   required true/false   (text questions can also set rows)
    * ============================================================ */
   var QUESTIONS = [
-    { id: 'setup', type: 'single', required: true, label: 'What do you race with?',
-      options: ['Controller', 'Belt or gear-driven wheel', 'Direct drive wheel', 'Other'] },
-    { id: 'experience', type: 'single', required: true, label: 'How long have you been sim racing?',
-      options: ['Under 1 year', '1 to 3 years', '3 to 5 years', '5+ years'] },
-    { id: 'coaching_wanted', type: 'multi', required: true, label: 'Which coaching would help you most? (pick any)',
-      options: ['Braking points', 'Corner entry speed', 'Apex and exit line', 'Throttle application', 'Consistency'] },
-    { id: 'recommend', type: 'scale', required: true, label: 'How likely are you to recommend ACA to a friend?',
-      min: 1, max: 5, lowLabel: 'Unlikely', highLabel: 'Very likely' },
-    { id: 'feedback', type: 'text', required: false, label: 'Anything else you want us to know?',
-      placeholder: 'Bugs, ideas, things you loved or hated…' }
+    { type: 'section', label: 'The Driver Profile' },
+    { id: 'hours', type: 'single', required: true, label: 'Roughly how many hours do you have in Assetto Corsa?',
+      options: ['Under 50 hours (Beginner)', '50 - 200 hours (Intermediate)', '200 - 500 hours (Advanced)', '500+ hours (Alien)'] },
+    { id: 'discipline', type: 'single', required: true, label: 'What is your primary discipline in Assetto Corsa?',
+      options: ['GT3 / GT4 Racing', 'Formula / Open Wheel', 'Drifting', 'Track Days / Hotlapping', 'League Racing'] },
+    { id: 'league_frequency', type: 'single', required: true, label: 'How often do you participate in organized League Racing (e.g., LFM, SimRacing.GP, private Discord leagues)?',
+      options: ['Multiple times a week', 'A few times a month', 'Rarely', 'Never'] },
+
+    { type: 'section', label: 'The Hardware & Setup' },
+    { id: 'wheelbase', type: 'single', required: true, label: 'What type of wheelbase do you race on?',
+      options: ['Direct Drive (Simagic, Fanatec, Moza, Simucube, etc.)', 'Belt/Gear Driven (Logitech, Thrustmaster, etc.)', 'Controller / Gamepad', 'Keyboard & Mouse'] },
+    { id: 'display', type: 'single', required: true, label: 'Are you playing in VR or on monitors?',
+      options: ['VR Headset', 'Single Monitor / Ultrawide', 'Triple Monitors'] },
+    { id: 'content_manager', type: 'single', required: true, label: 'Do you currently use Content Manager to launch Assetto Corsa?',
+      options: ['Yes', 'No'] },
+
+    { type: 'section', label: 'Telemetry & Improvement' },
+    { id: 'time_loss', type: 'single', required: true, label: 'Where do you feel you lose the most time on track?',
+      options: ['Braking too early / missing braking markers', 'Trail braking into the apex', 'Carrying minimum corner speed', 'Getting on the throttle too late', 'Overall lap consistency'] },
+    { id: 'telemetry_experience', type: 'single', required: true, label: 'Have you ever used a traditional telemetry tool (like MoTeC or pop-up graphs)?',
+      options: ['Yes, regularly', 'Yes, but I found it too confusing/time-consuming', 'No, never tried them'] },
+    { id: 'telemetry_frustration', type: 'text', required: false, label: 'What frustrates you the most about traditional telemetry tools? (If applicable)',
+      placeholder: 'Tell us what gets in your way…' },
+
+    { type: 'section', label: 'The ACA App' },
+    { id: 'test_combo', type: 'text', required: true, rows: 2, label: 'What is your go-to car and track combination for testing new setups or apps?',
+      placeholder: 'e.g. car and track' },
+    { id: 'why_beta', type: 'text', required: true, label: 'In one or two sentences, why do you want to test the ACA closed beta?',
+      placeholder: 'Your answer…' },
+    { id: 'dream_feature', type: 'text', required: false, label: 'If a live race engineer could have one "dream feature" in the future, what would you want it to be?',
+      placeholder: 'Dream big…' }
   ];
 
   var $ = function (id) { return document.getElementById(id); };
@@ -150,11 +172,20 @@
   function buildForm() {
     var wrap = $('questions');
     wrap.innerHTML = '';
-    QUESTIONS.forEach(function (q, n) {
+    var num = 0, sec = 0;
+    QUESTIONS.forEach(function (q) {
+      if (q.type === 'section') {
+        sec++;
+        var h = el('div', 'border-t border-zinc-800 pt-8 font-mono text-xs font-semibold uppercase tracking-widest text-red-500',
+                   'Section ' + sec + ' // ' + q.label);
+        wrap.appendChild(h);
+        return;
+      }
+      num++;
       var fs = el('fieldset', 'space-y-3');
       fs.dataset.qid = q.id;
       var legend = el('legend', 'mb-3 text-base font-semibold text-white');
-      legend.textContent = (n + 1) + '. ' + q.label + (q.required ? '' : ' (optional)');
+      legend.textContent = num + '. ' + q.label + (q.required ? '' : ' (optional)');
       fs.appendChild(legend);
 
       if (q.type === 'single' || q.type === 'multi') {
@@ -181,7 +212,7 @@
         fs.appendChild(ends);
       } else if (q.type === 'text') {
         var ta = document.createElement('textarea');
-        ta.name = q.id; ta.rows = 4; ta.maxLength = 1000;
+        ta.name = q.id; ta.rows = q.rows || 4; ta.maxLength = 1000;
         ta.placeholder = q.placeholder || '';
         ta.className = 'w-full rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30';
         fs.appendChild(ta);
@@ -195,6 +226,7 @@
   function collect() {
     var answers = {}, firstBad = null;
     QUESTIONS.forEach(function (q) {
+      if (q.type === 'section') return;
       var fs = document.querySelector('fieldset[data-qid="' + q.id + '"]');
       var value = null;
       if (q.type === 'single') {
