@@ -5,8 +5,8 @@
  *    Never put the service_role key here.
  */
 (function () {
-  var SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';
-  var SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  var SUPABASE_URL = 'https://gxxmnpsjdwabgzwrcwrd.supabase.co'; 
+  var SUPABASE_ANON_KEY = 'sb_publishable_YDgX0o65lMGFuPwP722RDQ_kLk-CTP4';
 
   var configured = !/YOUR_/.test(SUPABASE_URL + SUPABASE_ANON_KEY);
   var ACA = { configured: configured, sb: null, ready: Promise.resolve(null) };
