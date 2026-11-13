@@ -1,11 +1,5 @@
-/* ACA shared Supabase client.
- * 1) Replace the two placeholders below with values from
- *    Supabase Dashboard > Project Settings > API (Project URL + "anon" public key).
- * 2) The anon key is safe to ship in the browser ONLY because Row Level Security is on.
- *    Never put the service_role key here.
- */
 (function () {
-  var SUPABASE_URL = 'https://gxxmnpsjdwabgzwrcwrd.supabase.co'; 
+  var SUPABASE_URL = 'https://gxxmnpsjdwabgzwrcwrd.supabase.co';
   var SUPABASE_ANON_KEY = 'sb_publishable_YDgX0o65lMGFuPwP722RDQ_kLk-CTP4';
 
   var configured = !/YOUR_/.test(SUPABASE_URL + SUPABASE_ANON_KEY);
@@ -35,4 +29,20 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', updateHeader);
   else updateHeader();
+})();
+
+// Scrollbar reveal: visible while the pointer is near the right edge, or briefly while scrolling.
+(function () {
+  var root = document.documentElement, nearEdge = false, timer;
+  function update(on) { root.classList.toggle('sb-show', on); }
+  document.addEventListener('mousemove', function (e) {
+    nearEdge = e.clientX >= window.innerWidth - 40;
+    update(nearEdge);
+  }, { passive: true });
+  document.addEventListener('mouseleave', function () { nearEdge = false; update(false); });
+  window.addEventListener('scroll', function () {
+    update(true);
+    clearTimeout(timer);
+    timer = setTimeout(function () { update(nearEdge); }, 900);
+  }, { passive: true });
 })();
