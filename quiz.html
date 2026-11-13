@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beta Quiz | Assetto Corsa Accelerator</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#09090b">
+<link rel="icon" type="image/png" href="assets/ACA-GT40-favicon.png?v=2">
+<link rel="apple-touch-icon" href="assets/ACA-GT40-favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'] } } } };
+</script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .logo-blend { mix-blend-mode: screen; } /* drops the logo's black background onto the dark page */
+  /* Scrollbar: always reserve the same gutter (no layout shift between pages), but keep the bar invisible until you reach for it */
+  html { scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: transparent transparent; }
+  html.sb-show { scrollbar-color: #52525b transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: transparent; border-radius: 9999px; }
+  html.sb-show ::-webkit-scrollbar-thumb { background: #52525b; }
+  html.sb-show ::-webkit-scrollbar-thumb:hover { background: #71717a; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body class="bg-zinc-950 text-zinc-300 antialiased selection:bg-red-600 selection:text-white">
+
+<script src="aca-layout.js" data-slot="header"></script>
+
+<main class="px-5 pt-32 pb-20 sm:pt-40">
+  <div class="mx-auto max-w-2xl">
+    <p class="mb-3 font-mono text-xs font-semibold uppercase tracking-widest text-red-500">Closed Beta // Tester Quiz</p>
+    <h1 class="text-3xl font-black tracking-tight text-white sm:text-4xl">Beta tester quiz</h1>
+
+    <!-- Loading -->
+    <p id="v-loading" class="mt-8 font-mono text-sm text-zinc-500">Checking your access…</p>
+
+    <!-- Not a beta tester -->
+    <div id="v-blocked" class="mt-8 hidden rounded-md border border-zinc-800 bg-zinc-900/60 p-6">
+      <p class="font-mono text-xs uppercase tracking-widest text-zinc-500">Access // Beta only</p>
+      <p class="mt-2 text-zinc-200">This quiz is only for closed beta testers. You’re on the waitlist, and we’ll email you when a beta spot opens up.</p>
+      <a href="/dashboard" class="mt-5 inline-flex rounded-md border border-zinc-700 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">Back to dashboard</a>
+    </div>
+
+    <!-- Already submitted -->
+    <div id="v-done" class="mt-8 hidden overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
+      <div class="border-b border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-xs font-semibold tracking-wider text-zinc-400">QUIZ // ALREADY SUBMITTED</div>
+      <div class="p-5">
+        <p class="text-zinc-300">You’ve already completed this quiz. Each tester can submit once. Here’s your discount code again:</p>
+        <code id="code-done" class="mt-4 block break-all rounded-md border border-red-500/40 bg-zinc-900 px-4 py-4 text-center font-mono text-2xl font-bold tracking-widest text-white"></code>
+        <button type="button" data-copy="code-done" class="copy-btn mt-3 rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">Copy code</button>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div id="v-success" class="mt-8 hidden overflow-hidden rounded-md border border-red-500/40 bg-zinc-950">
+      <div class="border-b border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-xs font-semibold tracking-wider text-zinc-400">QUIZ // SUBMITTED</div>
+      <div class="p-5">
+        <p class="text-lg font-bold text-white">Thanks! Your answers are in.</p>
+        <p class="mt-2 text-zinc-400">Here’s your personal discount code. It’s unique to your account and can only be used once.</p>
+        <code id="code-success" class="mt-4 block break-all rounded-md border border-red-500/40 bg-zinc-900 px-4 py-4 text-center font-mono text-2xl font-bold tracking-widest text-white"></code>
+        <button type="button" data-copy="code-success" class="copy-btn mt-3 rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">Copy code</button>
+        <p class="mt-4 text-xs text-zinc-500">Save it somewhere safe. You can also see it again on this page any time you’re signed in.</p>
+      </div>
+    </div>
+
+    <!-- Quiz form (questions are built from QUESTIONS in the script below) -->
+    <form id="v-quiz" class="mt-8 hidden space-y-8" novalidate>
+      <p class="text-zinc-400">A few quick questions about your experience. Finish it and you’ll get a one-time discount code.</p>
+      <div id="questions" class="space-y-8"></div>
+      <div>
+        <button type="submit" id="submit-btn" class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-red-600 px-6 py-3.5 font-semibold text-white transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-70">
+          <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+          <span class="btn-label">Submit Quiz</span>
+        </button>
+        <p class="mt-3 text-xs text-zinc-500">You can only submit once, so double-check your answers.</p>
+      </div>
+    </form>
+
+    <p id="msg" class="mt-4 min-h-[1.25rem] text-sm" role="status" aria-live="polite"></p>
+  </div>
+</main>
+
+<script src="aca-layout.js" data-slot="footer"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="aca-config.js"></script>
+<script src="aca-auth.js"></script>
+<script>
+  /* ============================================================
+   * QUESTIONS: edit this list. Everything else builds from it.
+   *   id       unique key, becomes the column name in your Google Sheet
+   *   type     'single' (pick one) | 'multi' (pick several) | 'scale' (number range) | 'text' (free text)
+   *   label    the question shown to the tester
+   *   options  choices for single / multi
+   *   min,max,lowLabel,highLabel   for scale
+   *   required true/false
+   * ============================================================ */
+  var QUESTIONS = [
+    { id: 'setup', type: 'single', required: true, label: 'What do you race with?',
+      options: ['Controller', 'Belt or gear-driven wheel', 'Direct drive wheel', 'Other'] },
+    { id: 'experience', type: 'single', required: true, label: 'How long have you been sim racing?',
+      options: ['Under 1 year', '1 to 3 years', '3 to 5 years', '5+ years'] },
+    { id: 'coaching_wanted', type: 'multi', required: true, label: 'Which coaching would help you most? (pick any)',
+      options: ['Braking points', 'Corner entry speed', 'Apex and exit line', 'Throttle application', 'Consistency'] },
+    { id: 'recommend', type: 'scale', required: true, label: 'How likely are you to recommend ACA to a friend?',
+      min: 1, max: 5, lowLabel: 'Unlikely', highLabel: 'Very likely' },
+    { id: 'feedback', type: 'text', required: false, label: 'Anything else you want us to know?',
+      placeholder: 'Bugs, ideas, things you loved or hated…' }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = $('msg');
+  var VIEWS = ['v-loading', 'v-blocked', 'v-done', 'v-success', 'v-quiz'];
+
+  function show(text, ok) {
+    msg.textContent = text;
+    msg.className = 'mt-4 min-h-[1.25rem] text-sm ' + (ok ? 'text-emerald-400' : 'text-red-400');
+  }
+  function view(id) {
+    VIEWS.forEach(function (v) { $(v).classList.toggle('hidden', v !== id); });
+  }
+
+  /* ---------- Build the form ---------- */
+  var OPTION_CLASS = 'flex cursor-pointer items-center gap-3 rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3 text-zinc-200 transition hover:border-zinc-600 has-[:checked]:border-red-500 has-[:checked]:bg-red-950/30';
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  }
+
+  function choice(type, name, value, text) {
+    var label = el('label', OPTION_CLASS);
+    var input = document.createElement('input');
+    input.type = type; input.name = name; input.value = value;
+    input.className = 'h-4 w-4 shrink-0 accent-red-600';
+    label.appendChild(input);
+    label.appendChild(el('span', '', text));
+    return label;
+  }
+
+  function buildForm() {
+    var wrap = $('questions');
+    wrap.innerHTML = '';
+    QUESTIONS.forEach(function (q, n) {
+      var fs = el('fieldset', 'space-y-3');
+      fs.dataset.qid = q.id;
+      var legend = el('legend', 'mb-3 text-base font-semibold text-white');
+      legend.textContent = (n + 1) + '. ' + q.label + (q.required ? '' : ' (optional)');
+      fs.appendChild(legend);
+
+      if (q.type === 'single' || q.type === 'multi') {
+        var box = el('div', 'space-y-2');
+        q.options.forEach(function (opt) {
+          box.appendChild(choice(q.type === 'single' ? 'radio' : 'checkbox', q.id, opt, opt));
+        });
+        fs.appendChild(box);
+      } else if (q.type === 'scale') {
+        var row = el('div', 'flex gap-2');
+        for (var i = q.min; i <= q.max; i++) {
+          var l = el('label', 'flex flex-1 cursor-pointer flex-col items-center gap-2 rounded-md border border-zinc-800 bg-zinc-900 py-3 text-zinc-200 transition hover:border-zinc-600 has-[:checked]:border-red-500 has-[:checked]:bg-red-950/30');
+          var inp = document.createElement('input');
+          inp.type = 'radio'; inp.name = q.id; inp.value = String(i);
+          inp.className = 'h-4 w-4 accent-red-600';
+          l.appendChild(el('span', 'font-mono text-sm', String(i)));
+          l.appendChild(inp);
+          row.appendChild(l);
+        }
+        fs.appendChild(row);
+        var ends = el('div', 'flex justify-between text-xs text-zinc-500');
+        ends.appendChild(el('span', '', q.lowLabel || ''));
+        ends.appendChild(el('span', '', q.highLabel || ''));
+        fs.appendChild(ends);
+      } else if (q.type === 'text') {
+        var ta = document.createElement('textarea');
+        ta.name = q.id; ta.rows = 4; ta.maxLength = 1000;
+        ta.placeholder = q.placeholder || '';
+        ta.className = 'w-full rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30';
+        fs.appendChild(ta);
+      }
+      fs.appendChild(el('p', 'q-error hidden text-sm text-red-400', 'Please answer this question.'));
+      wrap.appendChild(fs);
+    });
+  }
+
+  /* ---------- Read + validate answers ---------- */
+  function collect() {
+    var answers = {}, firstBad = null;
+    QUESTIONS.forEach(function (q) {
+      var fs = document.querySelector('fieldset[data-qid="' + q.id + '"]');
+      var value = null;
+      if (q.type === 'single') {
+        var r = fs.querySelector('input:checked');
+        value = r ? r.value : null;
+      } else if (q.type === 'multi') {
+        var picked = Array.prototype.map.call(fs.querySelectorAll('input:checked'), function (i) { return i.value; });
+        value = picked.length ? picked : null;
+      } else if (q.type === 'scale') {
+        var s = fs.querySelector('input:checked');
+        value = s ? Number(s.value) : null;
+      } else if (q.type === 'text') {
+        var t = fs.querySelector('textarea').value.trim();
+        value = t || null;
+      }
+      var bad = q.required && value === null;
+      fs.querySelector('.q-error').classList.toggle('hidden', !bad);
+      if (bad && !firstBad) firstBad = fs;
+      if (value !== null) answers[q.id] = value;
+    });
+    return { answers: answers, firstBad: firstBad };
+  }
+
+  /* ---------- Submit (the server enforces beta-only, once-only, and creates the code) ---------- */
+  var submitting = false;
+  $('v-quiz').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (submitting) return;
+    show('', true);
+    var res = collect();
+    if (res.firstBad) {
+      res.firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      show('Please answer the required questions.', false);
+      return;
+    }
+    submitting = true;
+    var btn = $('submit-btn');
+    btn.disabled = true;
+    btn.querySelector('.spinner').classList.remove('hidden');
+    btn.querySelector('.btn-label').textContent = 'Submitting…';
+
+    ACA.sb.rpc('submit_quiz', { p_answers: res.answers })
+      .then(function (r) {
+        if (r.error) throw r.error;
+        $('code-success').textContent = r.data.code;
+        view('v-success');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })
+      .catch(function (err) {
+        var m = (err && err.message) || '';
+        if (m.indexOf('already_submitted') !== -1) { loadState(); return; }
+        if (m.indexOf('not_beta') !== -1) { view('v-blocked'); return; }
+        if (m.indexOf('not_authenticated') !== -1) { window.location.replace('/login'); return; }
+        submitting = false;
+        btn.disabled = false;
+        btn.querySelector('.spinner').classList.add('hidden');
+        btn.querySelector('.btn-label').textContent = 'Submit Quiz';
+        show('Could not submit your quiz. Please try again.', false);
+      });
+  });
+
+  /* ---------- Copy buttons ---------- */
+  document.querySelectorAll('.copy-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var text = $(b.getAttribute('data-copy')).textContent;
+      var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy code'; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () {});
+    });
+  });
+
+  /* ---------- Decide what to show ---------- */
+  function loadState() {
+    ACA.ready.then(function (session) {
+      if (!session) { window.location.replace('/login'); return; }
+      var uid = session.user.id;
+      return Promise.all([
+        ACA.sb.from('profiles').select('is_beta_tester').eq('user_id', uid).maybeSingle(),
+        ACA.sb.from('quiz_submissions').select('discount_code').eq('user_id', uid).maybeSingle()
+      ]).then(function (r) {
+        if (r[0].error) throw r[0].error;
+        if (r[1].error) throw r[1].error;
+        var isBeta = r[0].data && r[0].data.is_beta_tester;
+        if (!isBeta) { view('v-blocked'); return; }
+        if (r[1].data) { $('code-done').textContent = r[1].data.discount_code; view('v-done'); return; }
+        buildForm();
+        view('v-quiz');
+      });
+    }).catch(function (err) {
+      $('v-loading').textContent = '';
+      show(err && err.message ? err.message : 'Could not load the quiz.', false);
+    });
+  }
+
+  if (!ACA.configured) {
+    $('v-loading').textContent = '';
+    show('Supabase is not configured yet. Add your project URL and key in aca-config.js.', false);
+  } else {
+    loadState();
+    ACA.sb.auth.onAuthStateChange(function (event) { if (event === 'SIGNED_OUT') window.location.replace('/login'); });
+  }
+</script>
+</body>
+</html>
