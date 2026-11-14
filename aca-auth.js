@@ -86,21 +86,44 @@
 
   /* ---------- Desktop app handoff ----------
      The ACA desktop app opens  /login?desktop_port=PORT&state=STATE  in the browser.
-     We remember that request for this tab, and the moment a session exists (already logged in,
-     email login, Google login) we send the user's profile to the app's local server at
-     127.0.0.1:PORT and leave. location.replace() keeps the tab's history short, which gives
-     browsers the best chance of letting the final page close the tab. */
+     We remember that request for this tab. Once a session exists (already logged in, email
+     login, Google login) we show a "Logging you in" screen for a couple of seconds, then send
+     the user's profile to the app's local listener at 127.0.0.1:PORT. */
   (function () {
     var KEY = 'aca_desktop_handoff';
+    var MIN_SHOW_MS = 2200;   // how long the "Logging you in" screen stays up
 
     try {
       var q = new URLSearchParams(window.location.search);
       var port = q.get('desktop_port'), state = q.get('state');
       if (port && /^\d{4,5}$/.test(port) && state && /^[\w-]{8,64}$/.test(state)) {
         sessionStorage.setItem(KEY, JSON.stringify({ port: port, state: state, t: Date.now() }));
-        console.info('[ACA] desktop sign-in requested, waiting for session');
       }
     } catch (e) {}
+
+    function showLinking() {
+      if (document.getElementById('aca-linking')) return;
+      var st = document.createElement('style');
+      st.textContent = '@keyframes aca-spin{to{transform:rotate(360deg)}}' +
+        '@media (prefers-reduced-motion:reduce){#aca-linking .aca-spin{animation:none!important}}';
+      document.head.appendChild(st);
+      var el = document.createElement('div');
+      el.id = 'aca-linking';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      el.style.cssText = 'position:fixed;top:0;right:0;bottom:0;left:0;z-index:99999;display:flex;' +
+        'flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;' +
+        'background:#09090b;color:#d4d4d8;text-align:center;' +
+        'font-family:Inter,ui-sans-serif,system-ui,sans-serif';
+      el.innerHTML =
+        '<p style="margin:0;font:600 12px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.15em;' +
+        'text-transform:uppercase;color:#ef4444">Driver Profile</p>' +
+        '<h1 style="margin:0;font-size:32px;font-weight:900;color:#fff">Logging you in\u2026</h1>' +
+        '<p id="aca-linking-sub" style="margin:0;color:#a1a1aa">Linking your account to the ACA desktop app.</p>' +
+        '<div class="aca-spin" style="width:28px;height:28px;margin-top:8px;border:3px solid #27272a;' +
+        'border-top-color:#dc2626;border-radius:50%;animation:aca-spin .8s linear infinite"></div>';
+      (document.body || document.documentElement).appendChild(el);
+    }
 
     ACA.ready.then(function (session) {
       if (!session || !ACA.sb) return;
@@ -109,6 +132,8 @@
       if (!h || Date.now() - h.t > 10 * 60 * 1000) return;
       sessionStorage.removeItem(KEY);
       var user = session.user;
+      var started = Date.now();
+      showLinking();
 
       function go(p) {
         p = p || {};
@@ -120,8 +145,17 @@
           beta: p.is_beta_tester ? '1' : '0',
           api_key: p.api_key || ''
         });
-        console.info('[ACA] handing session to desktop app');
-        window.location.replace('http://127.0.0.1:' + h.port + '/callback?' + params.toString());
+        var url = 'http://127.0.0.1:' + h.port + '/callback?' + params.toString();
+        setTimeout(function () {
+          window.location.replace(url);
+          setTimeout(function () {
+            var sub = document.getElementById('aca-linking-sub');
+            if (sub) {
+              sub.style.color = '#fca5a5';
+              sub.textContent = 'Couldn\u2019t reach the ACA app. Click Log In in the app and try again.';
+            }
+          }, 6000);
+        }, Math.max(0, MIN_SHOW_MS - (Date.now() - started)));
       }
 
       ACA.sb.from('profiles').select('display_name, avatar, is_beta_tester, api_key')
