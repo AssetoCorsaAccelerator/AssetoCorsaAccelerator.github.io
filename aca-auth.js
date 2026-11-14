@@ -84,6 +84,52 @@
 
   window.ACA = ACA;
 
+  /* ---------- Desktop app handoff ----------
+     The ACA desktop app opens  /login?desktop_port=PORT&state=STATE  in the browser.
+     We remember that request for this tab, and the moment a session exists (already logged in,
+     email login, Google login) we send the user's profile to the app's local server at
+     127.0.0.1:PORT and leave. location.replace() keeps the tab's history short, which gives
+     browsers the best chance of letting the final page close the tab. */
+  (function () {
+    var KEY = 'aca_desktop_handoff';
+
+    try {
+      var q = new URLSearchParams(window.location.search);
+      var port = q.get('desktop_port'), state = q.get('state');
+      if (port && /^\d{4,5}$/.test(port) && state && /^[\w-]{8,64}$/.test(state)) {
+        sessionStorage.setItem(KEY, JSON.stringify({ port: port, state: state, t: Date.now() }));
+        console.info('[ACA] desktop sign-in requested, waiting for session');
+      }
+    } catch (e) {}
+
+    ACA.ready.then(function (session) {
+      if (!session || !ACA.sb) return;
+      var h = null;
+      try { h = JSON.parse(sessionStorage.getItem(KEY)); } catch (e) {}
+      if (!h || Date.now() - h.t > 10 * 60 * 1000) return;
+      sessionStorage.removeItem(KEY);
+      var user = session.user;
+
+      function go(p) {
+        p = p || {};
+        var params = new URLSearchParams({
+          state: h.state,
+          email: user.email || '',
+          name: p.display_name || ACA.metaName(user),
+          avatar: /^car[1-4]$/.test(p.avatar || '') ? p.avatar : 'car1',
+          beta: p.is_beta_tester ? '1' : '0',
+          api_key: p.api_key || ''
+        });
+        console.info('[ACA] handing session to desktop app');
+        window.location.replace('http://127.0.0.1:' + h.port + '/callback?' + params.toString());
+      }
+
+      ACA.sb.from('profiles').select('display_name, avatar, is_beta_tester, api_key')
+        .eq('user_id', user.id).maybeSingle()
+        .then(function (res) { go(res && res.data); }, function () { go(null); });
+    });
+  })();
+
   /* ---------- Scrollbar: visible near the right edge or while scrolling ---------- */
   (function () {
     var root = document.documentElement, nearEdge = false, timer;
