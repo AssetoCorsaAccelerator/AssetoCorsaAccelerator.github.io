@@ -76,7 +76,7 @@
         <span class="mb-3 block text-base font-semibold text-white">Screenshot or video <span class="font-normal text-zinc-500">(optional)</span></span>
         <label id="drop" for="file" class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-zinc-700 bg-zinc-900 px-4 py-8 text-center transition hover:border-zinc-500">
           <span class="font-semibold text-zinc-200">Choose a file or drop it here</span>
-          <span class="text-xs text-zinc-500">Image or video, up to 25 MB</span>
+          <span class="text-xs text-zinc-500">Image or video, up to 15 MB</span>
         </label>
         <input id="file" type="file" accept="image/*,video/*" class="sr-only">
         <div id="preview" class="mt-3 hidden rounded-md border border-zinc-800 bg-zinc-900 p-3">
@@ -110,8 +110,8 @@
   /* ---------- Settings ---------- */
   var TITLE_MAX = 50;          // keep in sync with maxlength on #title and the SQL check
   var DESC_MIN = 10, DESC_MAX = 2000;
-  var MAX_FILE_MB = 25;        // keep in sync with the storage bucket limit
-  var BUCKET = 'bug-reports';
+  var MAX_FILE_MB = 15;        // keep in sync with MAX_MB in the Apps Script
+  var SHEET_ENDPOINT = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'; // see bug_report_setup.md
 
   var $ = function (id) { return document.getElementById(id); };
   var msg = $('msg'), VIEWS = ['v-loading', 'v-blocked', 'v-success', 'v-form'];
@@ -190,37 +190,35 @@
     fieldError('err-desc', dErr); if (dErr) bad = true;
     if (bad) { show('Please fix the highlighted fields.', false); return; }
 
+    if (SHEET_ENDPOINT.indexOf('PASTE_') === 0) { show('Add your Apps Script web app URL to SHEET_ENDPOINT in this file.', false); return; }
     submitting = true;
-    var path = null, mediaUrl = null;
     setBusy(true, currentFile ? 'Uploading…' : 'Sending…');
 
-    var upload = Promise.resolve();
-    if (currentFile) {
-      var ext = (currentFile.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'bin';
-      path = userId + '/' + uuid() + '.' + ext;
-      upload = ACA.sb.storage.from(BUCKET).upload(path, currentFile, { contentType: currentFile.type, upsert: false })
-        .then(function (r) {
-          if (r.error) throw r.error;
-          mediaUrl = ACA.sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
-        });
-    }
+    var readFile = currentFile ? new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () { res(String(fr.result).split(',')[1]); };
+      fr.onerror = function () { rej(new Error('read_failed')); };
+      fr.readAsDataURL(currentFile);
+    }) : Promise.resolve(null);
 
-    upload.then(function () {
-      setBusy(true, 'Sending…');
-      return ACA.sb.rpc('submit_bug_report', { p_title: title, p_description: desc, p_media_url: mediaUrl });
-    }).then(function (r) {
-      if (r.error) throw r.error;
-      resetForm(); view('v-success'); window.scrollTo({ top: 0, behavior: 'smooth' });
-    }).catch(function (err) {
-      if (path) ACA.sb.storage.from(BUCKET).remove([path]); // don't leave orphaned uploads
-      var m = (err && err.message) || '';
-      if (m.indexOf('not_beta') !== -1) { view('v-blocked'); return; }
-      if (m.indexOf('not_authenticated') !== -1) { window.location.replace('/login'); return; }
-      if (m.indexOf('rate_limited') !== -1) show('You’ve sent several reports in the last hour. Please wait a bit before sending another.', false);
-      else show('Could not send your report. Please try again.', false);
-    }).then(function () {
-      submitting = false; setBusy(false, 'Send report');
-    });
+    Promise.all([readFile, ACA.sb.auth.getSession()]).then(function (r) {
+      var session = r[1].data && r[1].data.session;
+      if (!session) throw new Error('not_authenticated');
+      var body = { token: session.access_token, title: title, description: desc };
+      if (currentFile) { body.filename = currentFile.name; body.mimeType = currentFile.type; body.data = r[0]; }
+      // text/plain keeps this a "simple" request, so the browser skips the CORS preflight Apps Script can't answer
+      return fetch(SHEET_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+    }).then(function (res) { return res.json(); })
+      .then(function (j) {
+        if (!j.ok) throw new Error(j.error || 'failed');
+        resetForm(); view('v-success'); window.scrollTo({ top: 0, behavior: 'smooth' });
+      }).catch(function (err) {
+        var m = (err && err.message) || '';
+        if (m.indexOf('not_beta') !== -1) { view('v-blocked'); return; }
+        if (m.indexOf('not_authenticated') !== -1) { window.location.replace('/login'); return; }
+        if (m.indexOf('rate_limited') !== -1) show('You’ve sent several reports in the last hour. Please wait a bit before sending another.', false);
+        else show('Could not send your report. Please try again.', false);
+      }).then(function () { submitting = false; setBusy(false, 'Send report'); });
   });
 
   $('again-btn').addEventListener('click', function () { view('v-form'); window.scrollTo({ top: 0, behavior: 'smooth' }); });
