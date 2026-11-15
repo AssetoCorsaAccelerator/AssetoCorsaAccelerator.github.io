@@ -18,7 +18,6 @@
 <style>
   body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
   .logo-blend { mix-blend-mode: screen; } /* drops the logo's black background onto the dark page */
-  /* Scrollbar: always reserve the same gutter (no layout shift between pages), but keep the bar invisible until you reach for it */
   html { scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: transparent transparent; }
   html.sb-show { scrollbar-color: #52525b transparent; }
   ::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
@@ -60,9 +59,34 @@
           </div>
           <div>
             <p class="mb-2 text-sm font-medium text-zinc-300">Driver icon</p>
-            <div id="avatar-grid" class="grid grid-cols-4 gap-3" role="radiogroup" aria-label="Driver icon"></div>
+            <button type="button" id="avatar-btn" aria-haspopup="dialog" aria-label="Change driver icon" class="group relative block w-36 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400">
+              <span class="block aspect-[5/3] overflow-hidden rounded-md border border-zinc-800 bg-zinc-900 p-2 transition group-hover:border-zinc-600">
+                <img id="avatar-current" src="assets/car1.png" alt="Your driver icon" width="96" height="58" class="logo-blend h-full w-full object-contain">
+              </span>
+              <span class="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 transition group-hover:border-red-500">
+                <img src="assets/pencil.png" alt="" width="16" height="16" class="h-4 w-4">
+              </span>
+            </button>
           </div>
           <p id="profile-msg" class="min-h-[1.25rem] text-sm" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <!-- Subscription -->
+      <section id="plan-panel" class="overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
+        <div class="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2.5">
+          <span class="font-mono text-xs font-semibold tracking-wider text-zinc-400">SUBSCRIPTION</span>
+          <span id="plan-badge" class="rounded-sm border border-zinc-700 bg-zinc-800 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-300">Free</span>
+        </div>
+        <div class="p-5">
+          <p class="font-mono text-xs uppercase tracking-widest text-zinc-500">Current plan</p>
+          <p id="plan-name" class="mt-1 text-lg font-bold text-white">Free</p>
+          <div id="plan-upsell" class="mt-4 rounded-md border border-red-500/40 bg-red-950/20 p-4">
+            <p class="text-sm font-semibold text-white">Ready for more?</p>
+            <p class="mt-1 text-sm text-zinc-400">Upgrade to unlock more from your live race engineer. Compare plans to find the right fit.</p>
+            <a href="plans.html" class="mt-4 inline-flex rounded-md bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400">Upgrade your plan</a>
+          </div>
+          <a id="plan-manage" href="plans.html" class="mt-4 hidden inline-flex rounded-md border border-zinc-700 px-5 py-2.5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">View plans</a>
         </div>
       </section>
 
@@ -112,6 +136,17 @@
   </div>
 </main>
 
+<!-- Driver icon picker -->
+<div id="avatar-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-5" role="dialog" aria-modal="true" aria-labelledby="avatar-title">
+  <div class="w-full max-w-md overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
+    <div class="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2.5">
+      <span id="avatar-title" class="font-mono text-xs font-semibold tracking-wider text-zinc-400">CHOOSE DRIVER ICON</span>
+      <button type="button" id="avatar-close" aria-label="Close" class="px-1 text-lg leading-none text-zinc-400 transition hover:text-white">&times;</button>
+    </div>
+    <div id="avatar-grid" class="grid max-h-[60vh] grid-cols-3 gap-3 overflow-y-auto p-4 sm:grid-cols-4" role="radiogroup" aria-label="Driver icon"></div>
+  </div>
+</div>
+
 <script src="aca-layout.js" data-slot="footer"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -141,8 +176,23 @@
     }
   }
 
+  /* ---------- Subscription ---------- */
+  // Plan ids stored in profiles.plan -> label shown to the user. Anything missing counts as Free.
+  var PLAN_LABELS = { free: 'Free' };
+
+  function renderPlan(plan) {
+    var id = String(plan || 'free').toLowerCase();
+    var label = PLAN_LABELS[id] || (id.charAt(0).toUpperCase() + id.slice(1));
+    var isFree = id === 'free';
+    $('plan-name').textContent = label;
+    $('plan-badge').textContent = label;
+    $('plan-upsell').classList.toggle('hidden', !isFree);
+    $('plan-manage').classList.toggle('hidden', isFree);
+  }
+
   /* ---------- Profile: display name + driver icon ---------- */
-  var AVATARS = ['car1','car2','car3','car4'];
+  var AVATARS = [];
+  for (var n = 1; n <= 12; n++) AVATARS.push('car' + n);
   var TILE = 'aspect-[5/3] overflow-hidden rounded-md border bg-zinc-900 p-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400';
   var sessionUser = null, currentName = null, currentAvatar = 'car1';
 
@@ -162,6 +212,7 @@
   }
 
   function paintAvatars() {
+    $('avatar-current').src = 'assets/' + currentAvatar + '.png';
     $('avatar-grid').querySelectorAll('button').forEach(function (b) {
       var on = b.dataset.avatar === currentAvatar;
       b.setAttribute('aria-checked', on ? 'true' : 'false');
@@ -169,7 +220,26 @@
     });
   }
 
+  function openPicker() {
+    $('avatar-modal').classList.remove('hidden');
+    $('avatar-modal').classList.add('flex');
+    var sel = $('avatar-grid').querySelector('[aria-checked="true"]');
+    if (sel) sel.focus();
+  }
+  function closePicker() {
+    $('avatar-modal').classList.add('hidden');
+    $('avatar-modal').classList.remove('flex');
+    $('avatar-btn').focus();
+  }
+  $('avatar-btn').addEventListener('click', openPicker);
+  $('avatar-close').addEventListener('click', closePicker);
+  $('avatar-modal').addEventListener('click', function (e) { if (e.target === this) closePicker(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !$('avatar-modal').classList.contains('hidden')) closePicker();
+  });
+
   function chooseAvatar(id) {
+    closePicker();
     if (id === currentAvatar) return;
     var prev = currentAvatar;
     currentAvatar = id;
@@ -199,7 +269,7 @@
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-label', 'Car ' + (i + 1));
       var img = document.createElement('img');
-      img.src = 'assets/' + id + '.png'; img.alt = ''; img.width = 96; img.height = 58;
+      img.src = 'assets/' + id + '.png'; img.alt = ''; img.width = 96; img.height = 58; img.loading = 'lazy';
       img.className = 'logo-blend h-full w-full object-contain';
       b.appendChild(img);
       b.addEventListener('click', function () { chooseAvatar(id); });
@@ -236,6 +306,10 @@
 
       $('user-email').textContent = session.user.email || '';
 
+      // Plan is fetched on its own so a missing "plan" column can never break the rest of the dashboard
+      var planReq = ACA.sb.from('profiles').select('plan').eq('user_id', session.user.id).maybeSingle()
+        .then(function (r) { return r.error || !r.data ? 'free' : r.data.plan; }, function () { return 'free'; });
+
       return ACA.sb.from('profiles')
         .select('is_beta_tester, api_key, display_name, avatar')
         .eq('user_id', session.user.id)
@@ -246,6 +320,7 @@
           initProfile(session.user, profile);
           $('loading').classList.add('hidden');
           $('dash').classList.remove('hidden');
+          planReq.then(renderPlan);
 
           if (profile && profile.is_beta_tester) {
             $('beta-panel').classList.remove('hidden');
