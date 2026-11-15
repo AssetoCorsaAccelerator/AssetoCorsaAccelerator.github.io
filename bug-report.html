@@ -47,8 +47,8 @@
       <div class="border-b border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-xs font-semibold tracking-wider text-zinc-400">BUG REPORT // SENT</div>
       <div class="p-5">
         <p class="text-lg font-bold text-white">Thanks! Your report is in.</p>
-        <p class="mt-2 text-zinc-400">We’ll look into it. Found something else? Send another report.</p>
-        <button type="button" id="again-btn" class="mt-5 rounded-md bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-500">Report another bug</button>
+        <p class="mt-2 text-zinc-400">We’ll look into it.<span id="again-wrap"> Found something else? <a id="again-link" href="bug_report.html" class="font-semibold text-red-400 underline underline-offset-2 hover:text-red-300">Send another report</a>.</span></p>
+        <p id="limit-note" class="mt-3 text-xs text-zinc-500"></p>
       </div>
     </div>
 
@@ -94,6 +94,7 @@
           <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
           <span class="btn-label">Send report</span>
         </button>
+        <p id="quota" class="mt-3 text-xs text-zinc-500"></p>
       </div>
     </form>
 
@@ -111,7 +112,10 @@
   var TITLE_MAX = 50;          // keep in sync with maxlength on #title and the SQL check
   var DESC_MIN = 10, DESC_MAX = 2000;
   var MAX_FILE_MB = 15;        // keep in sync with MAX_MB in the Apps Script
-  var SHEET_ENDPOINT = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'; // see bug_report_setup.md
+  var SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz8al2PEohYS8GnNlEtI-5YIhkDTt7Ht2az8uPayt8gTPEOQMdk_RmLnWfeoEPK6mhJ/exec';
+  var RATE_MAX = 5;            // reports per window (the Apps Script enforces the same 5/hour server-side)
+  var RATE_WINDOW_MS = 60 * 60 * 1000;
+  var RATE_KEY = 'aca_bug_report_times';
 
   var $ = function (id) { return document.getElementById(id); };
   var msg = $('msg'), VIEWS = ['v-loading', 'v-blocked', 'v-success', 'v-form'];
@@ -125,6 +129,40 @@
   function fieldError(id, text) {
     var e = $(id); e.textContent = text || ''; e.classList.toggle('hidden', !text);
   }
+
+  /* ---------- Report limit (client-side; the server enforces it too) ---------- */
+  function recentTimes() {
+    var now = Date.now(), list = [];
+    try { list = JSON.parse(localStorage.getItem(RATE_KEY) || '[]'); } catch (e) {}
+    return (Array.isArray(list) ? list : []).filter(function (t) { return typeof t === 'number' && now - t < RATE_WINDOW_MS; });
+  }
+  function recordReport() {
+    var list = recentTimes(); list.push(Date.now());
+    try { localStorage.setItem(RATE_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+  function remaining() { return Math.max(0, RATE_MAX - recentTimes().length); }
+  function minutesUntilFree() {
+    var list = recentTimes().sort(function (a, b) { return a - b; });
+    return list.length ? Math.max(1, Math.ceil((list[0] + RATE_WINDOW_MS - Date.now()) / 60000)) : 0;
+  }
+  function updateQuota() {
+    var left = remaining();
+    $('quota').textContent = left > 0
+      ? 'You can send ' + left + ' more report' + (left === 1 ? '' : 's') + ' this hour.'
+      : 'You’ve reached the limit of ' + RATE_MAX + ' reports per hour. You can send another in about ' + minutesUntilFree() + ' min.';
+    $('again-wrap').classList.toggle('hidden', left === 0);
+    $('limit-note').textContent = left === 0 ? 'You’ve reached the limit of ' + RATE_MAX + ' reports per hour. Try again in about ' + minutesUntilFree() + ' min.' : '';
+  }
+
+  /* ---------- Warn before leaving with unsent work ---------- */
+  function isDirty() {
+    return submitting || $('title').value.trim() !== '' || $('desc').value.trim() !== '' || !!currentFile;
+  }
+  window.addEventListener('beforeunload', function (e) {
+    if (!isDirty()) return;
+    e.preventDefault();
+    e.returnValue = ''; // browsers show their own generic "Leave site? Changes you made may not be saved" prompt
+  });
 
   /* ---------- Counters ---------- */
   $('title').addEventListener('input', function () { $('cnt-title').textContent = this.value.length + '/' + TITLE_MAX; });
@@ -190,6 +228,7 @@
     fieldError('err-desc', dErr); if (dErr) bad = true;
     if (bad) { show('Please fix the highlighted fields.', false); return; }
 
+    if (remaining() === 0) { show('You’ve reached the limit of ' + RATE_MAX + ' reports per hour. Try again in about ' + minutesUntilFree() + ' min.', false); return; }
     if (SHEET_ENDPOINT.indexOf('PASTE_') === 0) { show('Add your Apps Script web app URL to SHEET_ENDPOINT in this file.', false); return; }
     submitting = true;
     setBusy(true, currentFile ? 'Uploading…' : 'Sending…');
@@ -211,7 +250,7 @@
     }).then(function (res) { return res.json(); })
       .then(function (j) {
         if (!j.ok) throw new Error(j.error || 'failed');
-        resetForm(); view('v-success'); window.scrollTo({ top: 0, behavior: 'smooth' });
+        recordReport(); resetForm(); updateQuota(); view('v-success'); window.scrollTo({ top: 0, behavior: 'smooth' });
       }).catch(function (err) {
         var m = (err && err.message) || '';
         if (m.indexOf('not_beta') !== -1) { view('v-blocked'); return; }
@@ -221,7 +260,9 @@
       }).then(function () { submitting = false; setBusy(false, 'Send report'); });
   });
 
-  $('again-btn').addEventListener('click', function () { view('v-form'); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  // "Send another report" is a real link back to this page, so it opens a fresh form
+  $('again-link').setAttribute('href', window.location.pathname);
+  updateQuota();
 
   /* ---------- Access check ---------- */
   function loadState() {
