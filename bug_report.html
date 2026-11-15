@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Report a Bug | Assetto Corsa Accelerator</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#09090b">
+<link rel="icon" type="image/png" href="assets/ACA-GT40-favicon.png?v=2">
+<link rel="apple-touch-icon" href="assets/ACA-GT40-favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'] } } } };
+</script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  html { scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: transparent transparent; }
+  html.sb-show { scrollbar-color: #52525b transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: transparent; border-radius: 9999px; }
+  html.sb-show ::-webkit-scrollbar-thumb { background: #52525b; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body class="bg-zinc-950 text-zinc-300 antialiased selection:bg-red-600 selection:text-white">
+
+<script src="aca-layout.js" data-slot="header"></script>
+
+<main class="px-5 pt-32 pb-20 sm:pt-40">
+  <div class="mx-auto max-w-2xl">
+    <p class="mb-3 font-mono text-xs font-semibold uppercase tracking-widest text-red-500">Closed Beta // Bug Report</p>
+    <h1 class="text-3xl font-black tracking-tight text-white sm:text-4xl">Report a bug</h1>
+
+    <p id="v-loading" class="mt-8 font-mono text-sm text-zinc-500">Checking your access…</p>
+
+    <div id="v-blocked" class="mt-8 hidden rounded-md border border-zinc-800 bg-zinc-900/60 p-6">
+      <p class="font-mono text-xs uppercase tracking-widest text-zinc-500">Access // Beta only</p>
+      <p class="mt-2 text-zinc-200">Bug reports are only for closed beta testers. You’re on the waitlist, and we’ll email you when a beta spot opens up.</p>
+      <a href="/dashboard" class="mt-5 inline-flex rounded-md border border-zinc-700 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">Back to dashboard</a>
+    </div>
+
+    <div id="v-success" class="mt-8 hidden overflow-hidden rounded-md border border-red-500/40 bg-zinc-950">
+      <div class="border-b border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-xs font-semibold tracking-wider text-zinc-400">BUG REPORT // SENT</div>
+      <div class="p-5">
+        <p class="text-lg font-bold text-white">Thanks! Your report is in.</p>
+        <p class="mt-2 text-zinc-400">We’ll look into it. Found something else? Send another report.</p>
+        <button type="button" id="again-btn" class="mt-5 rounded-md bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-500">Report another bug</button>
+      </div>
+    </div>
+
+    <form id="v-form" class="mt-8 hidden space-y-8" novalidate>
+      <p class="text-zinc-400">Tell us what went wrong. The more detail you give, the faster we can fix it.</p>
+
+      <!-- Title -->
+      <div>
+        <label for="title" class="mb-3 block text-base font-semibold text-white">Bug title</label>
+        <input id="title" type="text" maxlength="50" autocomplete="off" placeholder="e.g. Delta bar freezes after pit exit"
+          class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30">
+        <div class="mt-1 flex justify-between text-xs text-zinc-500"><span id="err-title" class="hidden text-red-400"></span><span class="ml-auto font-mono" id="cnt-title">0/50</span></div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label for="desc" class="mb-3 block text-base font-semibold text-white">What happened?</label>
+        <textarea id="desc" rows="7" maxlength="2000" placeholder="What did you expect, what actually happened, and what steps trigger it? Include your car and track if relevant."
+          class="w-full rounded-md border border-zinc-800 bg-zinc-900 px-4 py-3 text-white placeholder-zinc-500 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/30"></textarea>
+        <div class="mt-1 flex justify-between text-xs text-zinc-500"><span id="err-desc" class="hidden text-red-400"></span><span class="ml-auto font-mono" id="cnt-desc">0/2000</span></div>
+      </div>
+
+      <!-- Media -->
+      <div>
+        <span class="mb-3 block text-base font-semibold text-white">Screenshot or video <span class="font-normal text-zinc-500">(optional)</span></span>
+        <label id="drop" for="file" class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-zinc-700 bg-zinc-900 px-4 py-8 text-center transition hover:border-zinc-500">
+          <span class="font-semibold text-zinc-200">Choose a file or drop it here</span>
+          <span class="text-xs text-zinc-500">Image or video, up to 25 MB</span>
+        </label>
+        <input id="file" type="file" accept="image/*,video/*" class="sr-only">
+        <div id="preview" class="mt-3 hidden rounded-md border border-zinc-800 bg-zinc-900 p-3">
+          <div id="preview-media" class="flex justify-center"></div>
+          <div class="mt-3 flex items-center justify-between gap-3 text-sm">
+            <span id="file-name" class="truncate text-zinc-300"></span>
+            <button type="button" id="remove-file" class="shrink-0 rounded-md border border-zinc-700 px-3 py-1.5 font-semibold text-zinc-200 transition hover:border-zinc-500">Remove</button>
+          </div>
+        </div>
+        <p id="err-file" class="mt-1 hidden text-sm text-red-400"></p>
+      </div>
+
+      <div>
+        <button type="submit" id="submit-btn" class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-red-600 px-6 py-3.5 font-semibold text-white transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-70">
+          <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+          <span class="btn-label">Send report</span>
+        </button>
+      </div>
+    </form>
+
+    <p id="msg" class="mt-4 min-h-[1.25rem] text-sm" role="status" aria-live="polite"></p>
+  </div>
+</main>
+
+<script src="aca-layout.js" data-slot="footer"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="aca-config.js"></script>
+<script src="aca-auth.js"></script>
+<script>
+  /* ---------- Settings ---------- */
+  var TITLE_MAX = 50;          // keep in sync with maxlength on #title and the SQL check
+  var DESC_MIN = 10, DESC_MAX = 2000;
+  var MAX_FILE_MB = 25;        // keep in sync with the storage bucket limit
+  var BUCKET = 'bug-reports';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = $('msg'), VIEWS = ['v-loading', 'v-blocked', 'v-success', 'v-form'];
+  var currentFile = null, previewUrl = null, submitting = false, userId = null;
+
+  function show(text, ok) {
+    msg.textContent = text;
+    msg.className = 'mt-4 min-h-[1.25rem] text-sm ' + (ok ? 'text-emerald-400' : 'text-red-400');
+  }
+  function view(id) { VIEWS.forEach(function (v) { $(v).classList.toggle('hidden', v !== id); }); }
+  function fieldError(id, text) {
+    var e = $(id); e.textContent = text || ''; e.classList.toggle('hidden', !text);
+  }
+
+  /* ---------- Counters ---------- */
+  $('title').addEventListener('input', function () { $('cnt-title').textContent = this.value.length + '/' + TITLE_MAX; });
+  $('desc').addEventListener('input', function () { $('cnt-desc').textContent = this.value.length + '/' + DESC_MAX; });
+
+  /* ---------- File picking ---------- */
+  function clearFile() {
+    currentFile = null;
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+    $('file').value = '';
+    $('preview').classList.add('hidden');
+    $('preview-media').innerHTML = '';
+  }
+  function setFile(f) {
+    fieldError('err-file', '');
+    if (!f) return;
+    var isImg = f.type.indexOf('image/') === 0, isVid = f.type.indexOf('video/') === 0;
+    if (!isImg && !isVid) { fieldError('err-file', 'Please choose an image or a video.'); return; }
+    if (f.size > MAX_FILE_MB * 1024 * 1024) { fieldError('err-file', 'That file is over ' + MAX_FILE_MB + ' MB. Try trimming the clip or compressing it.'); return; }
+    clearFile();
+    currentFile = f;
+    previewUrl = URL.createObjectURL(f);
+    var m = document.createElement(isImg ? 'img' : 'video');
+    m.src = previewUrl; m.className = 'max-h-64 rounded-md';
+    if (isVid) { m.controls = true; m.muted = true; m.preload = 'metadata'; }
+    $('preview-media').appendChild(m);
+    $('file-name').textContent = f.name + ' (' + (f.size / 1048576).toFixed(1) + ' MB)';
+    $('preview').classList.remove('hidden');
+  }
+  $('file').addEventListener('change', function () { setFile(this.files[0]); });
+  $('remove-file').addEventListener('click', clearFile);
+  ['dragover', 'dragenter'].forEach(function (ev) {
+    $('drop').addEventListener(ev, function (e) { e.preventDefault(); this.classList.add('border-red-500'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    $('drop').addEventListener(ev, function (e) { e.preventDefault(); this.classList.remove('border-red-500'); });
+  });
+  $('drop').addEventListener('drop', function (e) { if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
+
+  /* ---------- Submit ---------- */
+  function setBusy(busy, label) {
+    var btn = $('submit-btn');
+    btn.disabled = busy;
+    btn.querySelector('.spinner').classList.toggle('hidden', !busy);
+    btn.querySelector('.btn-label').textContent = label;
+  }
+  function resetForm() {
+    $('title').value = ''; $('desc').value = '';
+    $('cnt-title').textContent = '0/' + TITLE_MAX; $('cnt-desc').textContent = '0/' + DESC_MAX;
+    clearFile(); fieldError('err-title'); fieldError('err-desc'); fieldError('err-file'); show('', true);
+  }
+  function uuid() {
+    return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+  }
+
+  $('v-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (submitting) return;
+    show('', true);
+    var title = $('title').value.trim(), desc = $('desc').value.trim(), bad = false;
+    fieldError('err-title', title ? '' : 'Please give your bug a title.'); if (!title) bad = true;
+    var dErr = !desc ? 'Please describe the bug.' : desc.length < DESC_MIN ? 'Please add a little more detail.' : '';
+    fieldError('err-desc', dErr); if (dErr) bad = true;
+    if (bad) { show('Please fix the highlighted fields.', false); return; }
+
+    submitting = true;
+    var path = null, mediaUrl = null;
+    setBusy(true, currentFile ? 'Uploading…' : 'Sending…');
+
+    var upload = Promise.resolve();
+    if (currentFile) {
+      var ext = (currentFile.name.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'bin';
+      path = userId + '/' + uuid() + '.' + ext;
+      upload = ACA.sb.storage.from(BUCKET).upload(path, currentFile, { contentType: currentFile.type, upsert: false })
+        .then(function (r) {
+          if (r.error) throw r.error;
+          mediaUrl = ACA.sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+        });
+    }
+
+    upload.then(function () {
+      setBusy(true, 'Sending…');
+      return ACA.sb.rpc('submit_bug_report', { p_title: title, p_description: desc, p_media_url: mediaUrl });
+    }).then(function (r) {
+      if (r.error) throw r.error;
+      resetForm(); view('v-success'); window.scrollTo({ top: 0, behavior: 'smooth' });
+    }).catch(function (err) {
+      if (path) ACA.sb.storage.from(BUCKET).remove([path]); // don't leave orphaned uploads
+      var m = (err && err.message) || '';
+      if (m.indexOf('not_beta') !== -1) { view('v-blocked'); return; }
+      if (m.indexOf('not_authenticated') !== -1) { window.location.replace('/login'); return; }
+      if (m.indexOf('rate_limited') !== -1) show('You’ve sent several reports in the last hour. Please wait a bit before sending another.', false);
+      else show('Could not send your report. Please try again.', false);
+    }).then(function () {
+      submitting = false; setBusy(false, 'Send report');
+    });
+  });
+
+  $('again-btn').addEventListener('click', function () { view('v-form'); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  /* ---------- Access check ---------- */
+  function loadState() {
+    ACA.ready.then(function (session) {
+      if (!session) { window.location.replace('/login'); return; }
+      userId = session.user.id;
+      return ACA.sb.from('profiles').select('is_beta_tester').eq('user_id', userId).maybeSingle().then(function (r) {
+        if (r.error) throw r.error;
+        view(r.data && r.data.is_beta_tester ? 'v-form' : 'v-blocked');
+      });
+    }).catch(function (err) {
+      $('v-loading').textContent = '';
+      show(err && err.message ? err.message : 'Could not load the page.', false);
+    });
+  }
+
+  if (!ACA.configured) {
+    $('v-loading').textContent = '';
+    show('Supabase is not configured yet. Add your project URL and key in aca-config.js.', false);
+  } else {
+    loadState();
+    ACA.sb.auth.onAuthStateChange(function (event) { if (event === 'SIGNED_OUT') window.location.replace('/login'); });
+  }
+</script>
+</body>
+</html>
