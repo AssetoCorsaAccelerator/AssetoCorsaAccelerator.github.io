@@ -35,7 +35,7 @@
     text.textContent = name;
     link.setAttribute('href', '/dashboard');
     link.setAttribute('aria-label', 'Your account: ' + name);
-    if (img && /^car[1-4]$/.test(avatar || '')) {
+    if (img && /^car([1-9]|1[0-2])$/.test(avatar || '')) {
       img.src = 'assets/' + avatar + '.png';
       img.width = 56; img.height = 32;
       img.className = 'logo-blend h-8 w-14 shrink-0 object-contain';
@@ -141,7 +141,7 @@
           state: h.state,
           email: user.email || '',
           name: p.display_name || ACA.metaName(user),
-          avatar: /^car[1-4]$/.test(p.avatar || '') ? p.avatar : 'car1',
+          avatar: /^car([1-9]|1[0-2])$/.test(p.avatar || '') ? p.avatar : 'car1',
           beta: p.is_beta_tester ? '1' : '0',
           api_key: p.api_key || ''
         });
