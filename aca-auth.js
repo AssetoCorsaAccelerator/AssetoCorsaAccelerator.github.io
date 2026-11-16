@@ -158,7 +158,7 @@
         }, Math.max(0, MIN_SHOW_MS - (Date.now() - started)));
       }
 
-      ACA.sb.from('profiles').select('display_name, avatar, is_beta_tester, api_key')
+      ACA.sb.from('profiles').select('display_name, avatar, is_beta_tester')
         .eq('user_id', user.id).maybeSingle()
         .then(function (res) { go(res && res.data); }, function () { go(null); });
     });
