@@ -49,6 +49,16 @@
       <section class="overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
         <div class="border-b border-zinc-800 bg-zinc-900 px-4 py-2.5 font-mono text-xs font-semibold tracking-wider text-zinc-400">PROFILE</div>
         <div class="space-y-6 p-5">
+          <div class="flex justify-center pb-2 pt-1">
+            <button type="button" id="avatar-btn" aria-haspopup="dialog" aria-label="Change icon" class="group relative block w-48 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400">
+              <span class="block aspect-[5/3] overflow-hidden rounded-md border border-zinc-800 bg-zinc-900 p-3 transition group-hover:border-zinc-600">
+                <img id="avatar-current" src="assets/car1.png" alt="Your icon" width="96" height="58" class="logo-blend h-full w-full object-contain">
+              </span>
+              <span class="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 transition group-hover:border-red-500">
+                <img src="assets/pencil.png" alt="" width="16" height="16" class="h-4 w-4">
+              </span>
+            </button>
+          </div>
           <div>
             <label for="display-name" class="mb-1.5 block text-sm font-medium text-zinc-300">Display name</label>
             <div class="flex gap-3">
@@ -56,17 +66,6 @@
               <button type="button" id="save-name" class="rounded-md border border-zinc-700 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 disabled:opacity-60">Save</button>
             </div>
             <p class="mt-2 text-xs text-zinc-500">Shown in the top corner of every page. Leave blank to use your account name.</p>
-          </div>
-          <div>
-            <p class="mb-2 text-sm font-medium text-zinc-300">Driver icon</p>
-            <button type="button" id="avatar-btn" aria-haspopup="dialog" aria-label="Change driver icon" class="group relative block w-36 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400">
-              <span class="block aspect-[5/3] overflow-hidden rounded-md border border-zinc-800 bg-zinc-900 p-2 transition group-hover:border-zinc-600">
-                <img id="avatar-current" src="assets/car1.png" alt="Your driver icon" width="96" height="58" class="logo-blend h-full w-full object-contain">
-              </span>
-              <span class="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 transition group-hover:border-red-500">
-                <img src="assets/pencil.png" alt="" width="16" height="16" class="h-4 w-4">
-              </span>
-            </button>
           </div>
           <p id="profile-msg" class="min-h-[1.25rem] text-sm" role="status" aria-live="polite"></p>
         </div>
@@ -136,14 +135,14 @@
   </div>
 </main>
 
-<!-- Driver icon picker -->
+<!-- icon picker -->
 <div id="avatar-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-5" role="dialog" aria-modal="true" aria-labelledby="avatar-title">
-  <div class="w-full max-w-md overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
+  <div class="w-full max-w-3xl overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
     <div class="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2.5">
-      <span id="avatar-title" class="font-mono text-xs font-semibold tracking-wider text-zinc-400">CHOOSE DRIVER ICON</span>
+      <span id="avatar-title" class="font-mono text-xs font-semibold tracking-wider text-zinc-400">SELECT ICON</span>
       <button type="button" id="avatar-close" aria-label="Close" class="px-1 text-lg leading-none text-zinc-400 transition hover:text-white">&times;</button>
     </div>
-    <div id="avatar-grid" class="grid max-h-[60vh] grid-cols-3 gap-3 overflow-y-auto p-4 sm:grid-cols-4" role="radiogroup" aria-label="Driver icon"></div>
+    <div id="avatar-grid" class="grid max-h-[75vh] grid-cols-2 gap-4 overflow-y-auto p-5 sm:grid-cols-3" role="radiogroup" aria-label="Icon"></div>
   </div>
 </div>
 
@@ -190,10 +189,10 @@
     $('plan-manage').classList.toggle('hidden', isFree);
   }
 
-  /* ---------- Profile: display name + driver icon ---------- */
+  /* ---------- Profile: display name + icon ---------- */
   var AVATARS = [];
   for (var n = 1; n <= 12; n++) AVATARS.push('car' + n);
-  var TILE = 'aspect-[5/3] overflow-hidden rounded-md border bg-zinc-900 p-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400';
+  var TILE = 'aspect-[5/3] overflow-hidden rounded-md border bg-zinc-900 p-4 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400';
   var sessionUser = null, currentName = null, currentAvatar = 'car1';
 
   function pshow(text, ok) {
@@ -269,7 +268,7 @@
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-label', 'Car ' + (i + 1));
       var img = document.createElement('img');
-      img.src = 'assets/' + id + '.png'; img.alt = ''; img.width = 96; img.height = 58; img.loading = 'lazy';
+      img.src = 'assets/' + id + '.png'; img.alt = ''; img.width = 192; img.height = 115; img.loading = 'lazy';
       img.className = 'logo-blend h-full w-full object-contain';
       b.appendChild(img);
       b.addEventListener('click', function () { chooseAvatar(id); });
