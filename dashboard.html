@@ -96,25 +96,7 @@
           <span class="rounded-sm border border-red-500/40 bg-red-500/10 px-2 py-0.5 font-mono text-[11px] font-bold tracking-wider text-red-400">BETA TESTER</span>
         </div>
         <div class="p-5">
-          <p class="font-mono text-xs uppercase tracking-widest text-zinc-500">Your API key</p>
-
-          <div id="key-wrap" class="mt-3 hidden">
-            <code id="key-text" class="block break-all rounded-md border border-zinc-800 bg-zinc-900 px-3 py-3 font-mono text-sm text-zinc-200"></code>
-            <div class="mt-3 flex gap-3">
-              <button type="button" id="toggle-key" class="rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">Show</button>
-              <button type="button" id="copy-key" class="rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900">Copy</button>
-            </div>
-            <p class="mt-3 text-xs text-zinc-500">Keep this key private. Paste it into the ACA app when it asks.</p>
-          </div>
-
-          <div id="gen-wrap" class="mt-3 hidden">
-            <p class="text-sm text-zinc-400">You don’t have a key yet.</p>
-            <button type="button" id="gen-btn" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-red-600 px-6 py-3.5 font-semibold text-white transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-70">
-              <svg class="spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
-              <span class="btn-label">Generate Key</span>
-            </button>
-          </div>
-          <div class="mt-5 border-t border-zinc-800 pt-5">
+          <div>
             <p class="font-mono text-xs uppercase tracking-widest text-zinc-500">Beta quiz</p>
             <p class="mt-2 text-sm text-zinc-400">Answer a few questions and get a one-time discount code.</p>
             <a href="/quiz" class="mt-3 inline-flex rounded-md border border-red-500/50 px-5 py-2.5 text-sm font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300">Take the quiz</a>
@@ -160,20 +142,6 @@
     msg.className = 'mt-4 min-h-[1.25rem] text-sm ' + (ok ? 'text-emerald-400' : 'text-red-400');
   }
   var $ = function (id) { return document.getElementById(id); };
-
-  var apiKey = null, revealed = false;
-
-  function renderKey() {
-    if (apiKey) {
-      $('key-wrap').classList.remove('hidden');
-      $('gen-wrap').classList.add('hidden');
-      $('key-text').textContent = revealed ? apiKey : '\u2022'.repeat(24);
-      $('toggle-key').textContent = revealed ? 'Hide' : 'Show';
-    } else {
-      $('key-wrap').classList.add('hidden');
-      $('gen-wrap').classList.remove('hidden');
-    }
-  }
 
   /* ---------- Subscription ---------- */
   // Plan ids stored in profiles.plan -> label shown to the user. Anything missing counts as Free.
@@ -310,7 +278,7 @@
         .then(function (r) { return r.error || !r.data ? 'free' : r.data.plan; }, function () { return 'free'; });
 
       return ACA.sb.from('profiles')
-        .select('is_beta_tester, api_key, display_name, avatar')
+        .select('is_beta_tester, display_name, avatar')
         .eq('user_id', session.user.id)
         .maybeSingle()
         .then(function (res) {
@@ -323,8 +291,6 @@
 
           if (profile && profile.is_beta_tester) {
             $('beta-panel').classList.remove('hidden');
-            apiKey = profile.api_key || null;
-            renderKey();
           } else {
             $('waitlist-panel').classList.remove('hidden');
           }
@@ -337,39 +303,6 @@
     // Signed out in another tab? Send them back to log in.
     ACA.sb.auth.onAuthStateChange(function (event) { if (event === 'SIGNED_OUT') bounceToLogin(); });
   }
-
-  $('toggle-key').addEventListener('click', function () { revealed = !revealed; renderKey(); });
-
-  $('copy-key').addEventListener('click', function () {
-    if (!apiKey) return;
-    var done = function () { $('copy-key').textContent = 'Copied'; setTimeout(function () { $('copy-key').textContent = 'Copy'; }, 1500); };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(apiKey).then(done, function () { show('Could not copy. Click Show and copy it manually.', false); });
-    } else { show('Could not copy. Click Show and copy it manually.', false); }
-  });
-
-  $('gen-btn').addEventListener('click', function () {
-    var btn = $('gen-btn');
-    btn.disabled = true;
-    btn.querySelector('.spinner').classList.remove('hidden');
-    btn.querySelector('.btn-label').textContent = 'Generating…';
-    show('', true);
-
-    // Key is created server-side by the generate_api_key() database function (see supabase-setup.sql)
-    ACA.sb.rpc('generate_api_key')
-      .then(function (res) {
-        if (res.error) throw res.error;
-        apiKey = res.data;
-        revealed = true;
-        renderKey();
-      })
-      .catch(function (err) {
-        btn.disabled = false;
-        btn.querySelector('.spinner').classList.add('hidden');
-        btn.querySelector('.btn-label').textContent = 'Generate Key';
-        show(err && err.message ? err.message : 'Could not generate a key. Try again.', false);
-      });
-  });
 
   $('signout-btn').addEventListener('click', function () {
     $('signout-btn').disabled = true;
