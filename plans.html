@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plans | Assetto Corsa Accelerator</title>
+<meta name="description" content="ACA plans and pricing. Compare plans for the in-game AI race engineer for Assetto Corsa.">
+<meta name="theme-color" content="#09090b">
+<link rel="icon" type="image/png" href="assets/ACA-GT40-favicon.png?v=2">
+<link rel="apple-touch-icon" href="assets/ACA-GT40-favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'] } } } };
+</script>
+<style>
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .logo-blend { mix-blend-mode: screen; } /* drops the logo's black background onto the dark page */
+  /* Scrollbar: always reserve the same gutter (no layout shift between pages), but keep the bar invisible until you reach for it */
+  html { scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: transparent transparent; }
+  html.sb-show { scrollbar-color: #52525b transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: transparent; border-radius: 9999px; }
+  html.sb-show ::-webkit-scrollbar-thumb { background: #52525b; }
+  html.sb-show ::-webkit-scrollbar-thumb:hover { background: #71717a; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body class="bg-zinc-950 text-zinc-300 antialiased selection:bg-red-600 selection:text-white">
+
+<script src="aca-layout.js" data-slot="header"></script>
+
+<main class="px-5 pt-32 pb-20 sm:pt-40">
+  <div class="mx-auto max-w-5xl">
+    <a id="back-link" href="/" class="font-mono text-xs uppercase tracking-widest text-zinc-500 transition-colors hover:text-white">&larr; Back to home</a>
+    <p class="mb-3 mt-6 font-mono text-xs font-semibold uppercase tracking-widest text-red-500">Plans // Pricing</p>
+    <h1 class="text-3xl font-black tracking-tight text-white sm:text-5xl">Pick your plan</h1>
+    <p id="plans-intro" class="mt-4 max-w-2xl text-zinc-400"></p>
+
+    <!-- Shown only when signed in -->
+    <div id="current-plan" class="mt-8 hidden rounded-md border border-zinc-800 bg-zinc-900/60 px-5 py-4">
+      <p class="font-mono text-xs uppercase tracking-widest text-zinc-500">Your plan</p>
+      <p id="current-plan-name" class="mt-1 font-semibold text-white"></p>
+    </div>
+
+    <!-- Plan cards are built from PLANS in the script below -->
+    <div id="plans" class="mt-10 grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-6"></div>
+    <p id="plans-note" class="mt-6 text-center text-sm text-zinc-500"></p>
+
+    <!-- FAQ: built from FAQS in the script below -->
+    <section id="faq-section" class="mt-20 hidden">
+      <h2 class="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">Questions</h2>
+      <div id="faq" class="mt-6 divide-y divide-zinc-800 border-y border-zinc-800"></div>
+    </section>
+  </div>
+</main>
+
+<script src="aca-layout.js" data-slot="footer"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="aca-config.js"></script>
+<script src="aca-auth.js"></script>
+<script>
+  /* ============================================================
+   * EDIT THIS SECTION. Anything marked PLACEHOLDER is a stand-in: replace it before you share the page.
+   *
+   * PRICING: set PRO_PRICE (a number) and the Pro price, the Tandem per-person price (10% less),
+   * the crossed-out price and the "total for two" line are all worked out for you.
+   * While PRO_PRICE is null, prices show as $X / $Y.
+   *
+   * Plan fields
+   *   id           matches profiles.plan in Supabase ('free', 'pro', 'tandem')
+   *   name, tagline, price, period
+   *   originalPrice  optional crossed-out price shown before the real price
+   *   savings        optional red line under the price (the discount callout)
+   *   subnote        optional small grey line under that
+   *   recommended  true on ONE plan to highlight it
+   *   cta          button text for people who aren't on this plan
+   *   checkoutUrl  your payment link (Stripe etc). Leave '' to show a disabled "Coming soon" button.
+   *   features / notIncluded   lists on the card
+   * ============================================================ */
+  var PRO_PRICE = null;            // PLACEHOLDER: your solo Pro price per period, e.g. 9.99
+  var CURRENCY  = '$';             // PLACEHOLDER: change if you don't bill in dollars
+  var PERIOD    = 'per month';     // PLACEHOLDER: 'per month' or 'per year'
+  var TANDEM_DISCOUNT = 0.10;      // each Tandem member pays 10% less than a solo Pro plan
+
+  function money(n) { return CURRENCY + (Number.isInteger(n) ? n : n.toFixed(2)); }
+  var tandemEach = PRO_PRICE === null ? null : Math.round(PRO_PRICE * (1 - TANDEM_DISCOUNT) * 100) / 100;
+
+  var PLANS_INTRO = 'Start free. Go Pro on your own, or team up with a friend on Tandem and you each pay 10% less.';
+  var PLANS_NOTE  = 'PLACEHOLDER: e.g. Cancel anytime. Tandem is billed separately to each person.';
+
+  var PLANS = [
+    {
+      id: 'free', name: 'Free', tagline: 'PLACEHOLDER: for getting started',
+      price: CURRENCY + '0', period: 'forever', recommended: false,
+      cta: 'Create free account', checkoutUrl: '',
+      features: ['PLACEHOLDER: Free feature one', 'PLACEHOLDER: Free feature two', 'PLACEHOLDER: Free feature three'],
+      notIncluded: ['PLACEHOLDER: A paid-only feature']
+    },
+    {
+      id: 'pro', name: 'Pro', tagline: 'PLACEHOLDER: for serious racers',
+      price: PRO_PRICE === null ? CURRENCY + 'X' : money(PRO_PRICE), period: PERIOD, recommended: false,
+      cta: 'Get Pro', checkoutUrl: '',
+      features: ['PLACEHOLDER: Pro feature one', 'PLACEHOLDER: Pro feature two', 'PLACEHOLDER: Pro feature three'],
+      notIncluded: []
+    },
+    {
+      id: 'tandem', name: 'Tandem', tagline: 'Pro for two people. Race with a friend and save.',
+      price: tandemEach === null ? CURRENCY + 'Y' : money(tandemEach), period: PERIOD + ', per person', recommended: true,
+      originalPrice: PRO_PRICE === null ? '' : money(PRO_PRICE),
+      savings: 'Save 10% each vs. a solo Pro plan',
+      subnote: tandemEach === null ? '' : money(Math.round(tandemEach * 2 * 100) / 100) + ' total for two people',
+      cta: 'Get Tandem', checkoutUrl: '',
+      features: ['Everything in Pro', 'Made for two people', 'Each of you pays 10% less than a solo Pro plan'],
+      notIncluded: []
+    }
+  ];
+
+  var FAQS = [
+    { q: 'What is Tandem?', a: 'Tandem is Pro for two people. You each get everything in Pro, and each of you pays 10% less than you would on a solo Pro plan.' },
+    { q: 'How much do I save with Tandem?', a: 'Each person pays 10% less than the solo Pro price, so together you pay 10% less than two separate Pro plans.' },
+    { q: 'PLACEHOLDER: How do I link my partner?', a: 'PLACEHOLDER: Explain how two accounts are paired up on a Tandem plan.' },
+    { q: 'PLACEHOLDER: Can I cancel anytime?', a: 'PLACEHOLDER: Replace with your billing, cancellation and refund policy.' }
+  ];
+  /* ============================================================ */
+
+  var $ = function (id) { return document.getElementById(id); };
+  var state = { signedIn: false, current: 'free' };
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  }
+
+  var CHECK = '<svg class="mt-0.5 h-4 w-4 shrink-0 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
+  var CROSS = '<svg class="mt-0.5 h-4 w-4 shrink-0 text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  var BTN_PRIMARY = 'inline-flex w-full items-center justify-center rounded-md bg-red-600 px-6 py-3.5 font-semibold text-white transition hover:bg-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400';
+  var BTN_OUTLINE = 'inline-flex w-full items-center justify-center rounded-md border border-zinc-700 px-6 py-3.5 font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400';
+  var BTN_DISABLED = 'inline-flex w-full cursor-not-allowed items-center justify-center rounded-md border border-zinc-800 bg-zinc-900 px-6 py-3.5 font-semibold text-zinc-500';
+
+  function button(plan) {
+    var style = plan.recommended ? BTN_PRIMARY : BTN_OUTLINE;
+    if (!state.signedIn) {
+      var a = el('a', style, plan.cta);
+      a.href = plan.id === 'free' ? '/signup' : '/login';
+      return a;
+    }
+    if (plan.id === state.current) {
+      var cur = el('span', BTN_DISABLED, 'Current plan');
+      cur.setAttribute('aria-disabled', 'true');
+      return cur;
+    }
+    if (plan.checkoutUrl) {
+      var link = el('a', style, plan.cta);
+      link.href = plan.checkoutUrl;
+      return link;
+    }
+    var soon = el('span', BTN_DISABLED, plan.id === 'free' ? 'Free tier' : 'Coming soon');
+    soon.setAttribute('aria-disabled', 'true');
+    return soon;
+  }
+
+  function render() {
+    var wrap = $('plans');
+    wrap.innerHTML = '';
+    PLANS.forEach(function (p) {
+      var isCurrent = state.signedIn && p.id === state.current;
+      var card = el('article', 'relative flex flex-col rounded-md border bg-zinc-950 p-6 ' +
+        (p.recommended ? 'border-red-500/60' : 'border-zinc-800'));
+
+      if (p.recommended) {
+        card.appendChild(el('span', 'absolute -top-3 left-6 rounded-sm border border-red-500/60 bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-red-400', 'Recommended'));
+      }
+      if (isCurrent) {
+        card.appendChild(el('span', 'absolute -top-3 right-6 rounded-sm border border-zinc-700 bg-zinc-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-300', 'Your plan'));
+      }
+
+      card.appendChild(el('h2', 'text-xl font-bold text-white', p.name));
+      card.appendChild(el('p', 'mt-1 text-sm text-zinc-400', p.tagline));
+
+      var price = el('p', 'mt-5 flex flex-wrap items-baseline gap-x-2');
+      if (p.originalPrice) price.appendChild(el('span', 'text-xl font-semibold text-zinc-600 line-through', p.originalPrice));
+      price.appendChild(el('span', 'text-4xl font-black tracking-tight text-white', p.price));
+      price.appendChild(el('span', 'text-sm text-zinc-500', p.period));
+      card.appendChild(price);
+      if (p.savings) card.appendChild(el('p', 'mt-2 font-mono text-xs font-semibold uppercase tracking-wider text-red-400', p.savings));
+      if (p.subnote) card.appendChild(el('p', 'mt-1 text-xs text-zinc-500', p.subnote));
+
+      var ul = el('ul', 'mt-6 flex-1 space-y-3 text-sm');
+      p.features.forEach(function (f) {
+        var li = el('li', 'flex gap-3 text-zinc-200');
+        li.innerHTML = CHECK;
+        li.appendChild(el('span', '', f));
+        ul.appendChild(li);
+      });
+      (p.notIncluded || []).forEach(function (f) {
+        var li = el('li', 'flex gap-3 text-zinc-600');
+        li.innerHTML = CROSS;
+        li.appendChild(el('span', '', f));
+        ul.appendChild(li);
+      });
+      card.appendChild(ul);
+
+      var foot = el('div', 'mt-8');
+      foot.appendChild(button(p));
+      card.appendChild(foot);
+      wrap.appendChild(card);
+    });
+  }
+
+  function renderFaq() {
+    if (!FAQS.length) return;
+    $('faq-section').classList.remove('hidden');
+    var box = $('faq');
+    FAQS.forEach(function (f) {
+      var d = el('details', 'group py-5');
+      var s = el('summary', 'flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-white [&::-webkit-details-marker]:hidden');
+      s.appendChild(el('span', '', f.q));
+      var chev = el('span', 'shrink-0 text-zinc-500 transition-transform group-open:rotate-90', '\u203A');
+      s.appendChild(chev);
+      d.appendChild(s);
+      d.appendChild(el('p', 'mt-3 leading-relaxed text-zinc-400', f.a));
+      box.appendChild(d);
+    });
+  }
+
+  function planName(id) {
+    var found = PLANS.filter(function (p) { return p.id === id; })[0];
+    return found ? found.name : id;
+  }
+
+  $('plans-intro').textContent = PLANS_INTRO;
+  $('plans-note').textContent = PLANS_NOTE;
+  renderFaq();
+  render(); // signed-out view right away; refined below once we know who is here
+
+  if (ACA.configured) {
+    ACA.ready.then(function (session) {
+      if (!session) return;
+      state.signedIn = true;
+      $('back-link').setAttribute('href', '/dashboard');
+      $('back-link').innerHTML = '&larr; Back to dashboard';
+      render();
+
+      // Fetched on its own, so a missing "plan" column can never break the page. Falls back to free.
+      return ACA.sb.from('profiles').select('plan').eq('user_id', session.user.id).maybeSingle()
+        .then(function (res) {
+          var plan = (!res.error && res.data && res.data.plan) ? res.data.plan : 'free';
+          state.current = plan;
+          $('current-plan').classList.remove('hidden');
+          $('current-plan-name').textContent = planName(plan);
+          render();
+        });
+    }).catch(function () { /* keep the signed-out/free view */ });
+  }
+</script>
+</body>
+</html>
